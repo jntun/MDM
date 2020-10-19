@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/Nastyyy/mdm-back/market"
 	"github.com/gorilla/websocket"
@@ -65,16 +66,32 @@ func main() {
 	if DEBUG {
 		os.Setenv("DEBUG", "true")
 	}
+	tickRate := time.Minute * 2
+	if os.Getenv("DEBUG") == "true" {
+		tickRate = time.Millisecond * 500
+	}
 
-	market.Game()
+	game := market.GameInstance{Running: true, TickRate: tickRate, Market: market.NewMarket()}
 
+	go func() {
+
+		fmt.Println("Starting market game...")
+		for game.Running {
+			game.Tick()
+			if DEBUG {
+				fmt.Println(game)
+			}
+
+			time.Sleep(game.TickRate)
+		}
+	}()
+
+	fmt.Println("Starting HTTP server...")
 	http.HandleFunc("/", session)
 	http.HandleFunc("/authorize", authorize)
 	s := &http.Server{
 		Addr: ":8080",
 	}
 
-	fmt.Println("Serve")
 	log.Fatal(s.ListenAndServe())
-
 }
