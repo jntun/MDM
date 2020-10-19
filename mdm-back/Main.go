@@ -4,11 +4,15 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
+	"os"
+	"strings"
 
+	"github.com/Nastyyy/mdm-back/market"
 	"github.com/gorilla/websocket"
 	uuid "github.com/satori/go.uuid"
 )
+
+const DEBUG bool = true
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -31,53 +35,46 @@ func session(w http.ResponseWriter, r *http.Request) {
 		_, msg, err := conn.ReadMessage()
 		if err != nil {
 			log.Println(err)
+			break
 		}
 		handleMessage(msg)
 	}
 }
 
-func handleMessage(msg []byte) {
-	fmt.Println(msg)
-	/*
-		var data map[string]interface{}
-		err := json.Unmarshal(msg, &data)
-		if err != nil {
-			log.Println(err)
-		}
-		fmt.Println(data["uuid"].(string), data["body"])
-		switch data["body"] {
-		case "register":
-			fmt.Println("Registering")
-		}
-	*/
+func handleMessage(byteMsg []byte) {
+	msg := NewMessage(byteMsg)
+	EventHandler(msg)
+	fmt.Println(strings.Repeat("-", 80))
 }
 
-func newCookie() *http.Cookie {
-	uid := uuid.NewV4()
-	return &http.Cookie{
-		Name:    "uuid",
-		Value:   uid.String(),
-		Expires: time.Now().Add(365 * 24 * time.Hour),
-	}
-}
-
+// Generates random UUID and writes response with it
 func authorize(w http.ResponseWriter, r *http.Request) {
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
 
 	cookie, err := r.Cookie("uuid")
 	if err != nil {
 		fmt.Println("User does not have uuid")
-		http.SetCookie(w, newCookie())
+		uid := uuid.NewV4()
+		w.Write([]byte(uid.String()))
 	} else {
 		fmt.Println(cookie)
 	}
 }
 
 func main() {
+	if DEBUG {
+		os.Setenv("DEBUG", "true")
+	}
+
+	market.Game()
+
 	http.HandleFunc("/", session)
 	http.HandleFunc("/authorize", authorize)
 	s := &http.Server{
 		Addr: ":8080",
 	}
+
+	fmt.Println("Serve")
 	log.Fatal(s.ListenAndServe())
+
 }

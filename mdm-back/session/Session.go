@@ -1,11 +1,11 @@
-package net
+package session
 
 import (
 	"errors"
 	"fmt"
 )
 
-// Session represents the logic that connects all users for a given isntance
+// Session represents the logic that connects all users for a given instance
 type Session struct {
 	Admin *User   `json:"admin,omitempty"`
 	Users []*User `json:"users,omitempty"`
