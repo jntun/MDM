@@ -1,4 +1,4 @@
-package session
+package market
 
 import (
 	"errors"
@@ -7,14 +7,18 @@ import (
 
 // Session represents the logic that connects all users for a given instance
 type Session struct {
-	Admin *User   `json:"admin,omitempty"`
-	Users []*User `json:"users,omitempty"`
+	Admin *User         `json:"admin,omitempty"`
+	Users []*User       `json:"users,omitempty"`
+	Game  *GameInstance `json:"game"`
 }
 
-// MakeNewSession handles creating a new unique session
-func MakeNewSession(admin *User) *Session {
+func NewSession(admin *User) *Session {
 	session := Session{Admin: admin}
 	return &session
+}
+
+func (sess *Session) SetGameInstance(game *GameInstance) {
+	sess.Game = game
 }
 
 // AddUser appends a user to a Session's Users

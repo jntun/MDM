@@ -13,7 +13,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-const DEBUG bool = true
+const DEBUG bool = false
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -23,7 +23,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func session(w http.ResponseWriter, r *http.Request) {
+func session(w http.ResponseWriter, r *http.Request, sess *market.Session) {
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
 
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -38,13 +38,13 @@ func session(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 			break
 		}
-		handleMessage(msg)
+		handleMessage(msg, sess)
 	}
 }
 
-func handleMessage(byteMsg []byte) {
+func handleMessage(byteMsg []byte, sess *market.Session) {
 	msg := NewMessage(byteMsg)
-	EventHandler(msg)
+	EventHandler(msg, sess)
 	fmt.Println(strings.Repeat("-", 80))
 }
 
@@ -62,33 +62,50 @@ func authorize(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func getUsername(w http.ResponseWriter, r *http.Request) {
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
+
+	cookie, err := r.Cookie("uuid")
+	if err != nil {
+		log.Printf("/getusername: Error getting uuid cookie %v", err)
+	}
+
+	// TODO: Search session for user with matching uuid and write username
+	fmt.Println(cookie)
+}
+
 func main() {
 	if DEBUG {
 		os.Setenv("DEBUG", "true")
 	}
+
 	tickRate := time.Minute * 2
-	if os.Getenv("DEBUG") == "true" {
+	if DEBUG {
 		tickRate = time.Millisecond * 500
 	}
 
+	testUser := market.NewUser("admin")
+	gameSession := market.NewSession(testUser)
 	game := market.GameInstance{Running: true, TickRate: tickRate, Market: market.NewMarket()}
+	gameSession.SetGameInstance(&game)
 
 	go func() {
-
 		fmt.Println("Starting market game...")
 		for game.Running {
 			game.Tick()
 			if DEBUG {
 				fmt.Println(game)
 			}
-
 			time.Sleep(game.TickRate)
 		}
 	}()
 
 	fmt.Println("Starting HTTP server...")
-	http.HandleFunc("/", session)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		session(w, r, gameSession)
+	})
 	http.HandleFunc("/authorize", authorize)
+	http.HandleFunc("/getusername", getUsername)
 	s := &http.Server{
 		Addr: ":8080",
 	}

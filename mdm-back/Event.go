@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Nastyyy/mdm-back/market"
+)
 
 // Event map
 const (
@@ -15,18 +19,18 @@ type Event struct {
 }
 */
 
-func EventHandler(message *Message) {
+func EventHandler(message *Message, session *market.Session) {
 	fmt.Println("MessageObj:", *message)
 	switch message.Action {
 	// TODO: Fulfill events
 	case buy:
 		action := BuyAction{}
-		action.DoAction()
+		action.DoAction(message, session)
 	case sell:
 		action := SellAction{}
-		action.DoAction()
+		action.DoAction(message, session)
 	case ping:
 		action := PingAction{}
-		action.DoAction()
+		action.DoAction(message, session)
 	}
 }

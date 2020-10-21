@@ -1,4 +1,4 @@
-package session
+package market
 
 import (
 	"net/http"
@@ -25,10 +25,11 @@ func NewUser(name string) *User {
 
 // CookieGen creates a Cookie with all of a given User's needed info.
 // Used for inital setting or re-setting of a user's session cookie
+// TODO Probably not needed
 func (user *User) CookieGen() *http.Cookie {
 	return &http.Cookie{
 		Name:    "uuid",
 		Value:   user.UUID.String(),
-		Expires: time.Now().Add(365 * 24 * time.Hour),
+		Expires: time.Now().Add(time.Hour * 48),
 	}
 }
