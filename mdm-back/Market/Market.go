@@ -6,6 +6,8 @@ import (
 )
 
 type Market struct {
+	Name   string
+	Ticker string
 	Stocks []*Stock
 }
 
@@ -15,8 +17,24 @@ func (market *Market) Update() {
 	}
 }
 
+func (market *Market) GetStock(ticker string) (stock *Stock, err error) {
+	for _, stock := range market.Stocks {
+		if stock.Ticker == ticker {
+			return stock, nil
+		}
+	}
+
+	//return nil, error("%s - Could not find stock: %s", market.Ticker, ticker)
+	return nil, nil
+}
+
 func (market *Market) AddStock(stock *Stock) {
 	market.Stocks = append(market.Stocks, stock)
+}
+
+func (market *Market) BuyStock() error {
+
+	return nil
 }
 
 func (market Market) String() string {

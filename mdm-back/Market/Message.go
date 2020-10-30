@@ -1,8 +1,9 @@
-package main
+package market
 
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	uuid "github.com/satori/go.uuid"
 )
@@ -16,14 +17,14 @@ type Message struct {
 }
 
 func NewMessage(byteMsg []byte) *Message {
-	if DEBUG {
+	if os.Getenv("DEBUG") == "true" {
 		fmt.Println(string(byteMsg))
 	}
 
 	msg := Message{}
 	err := json.Unmarshal(byteMsg, &msg)
 	if err != nil {
-		fmt.Println("Error unmarshaling message: ", err, "\nMessage: ", string(byteMsg))
+		fmt.Println("NewMessage() - Error unmarshaling message: ", err, "\nMessage: ", string(byteMsg))
 	}
 
 	return &msg

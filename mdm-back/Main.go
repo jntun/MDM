@@ -11,7 +11,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-const DEBUG bool = false
+const DEBUG bool = true
 
 // Generates random UUID and writes response with it
 func authorize(w http.ResponseWriter, r *http.Request) {
@@ -42,16 +42,25 @@ func getUsername(w http.ResponseWriter, r *http.Request) {
 func main() {
 	if DEBUG {
 		os.Setenv("DEBUG", "true")
+	} else {
+		os.Setenv("DEBUG", "false")
 	}
 
 	tickRate := time.Minute * 2
 	if DEBUG {
-		tickRate = time.Millisecond * 500
+		tickRate = time.Second
 	}
 
-	testUser := market.NewUser("admin")
-	gameSession := market.NewSession(testUser)
-	game := market.GameInstance{Running: true, TickRate: tickRate, Market: market.NewMarket()}
+	admin, _ := market.NewUser("admin", uuid.NewV4().String())
+	testUser, _ := market.NewUser("test", "fce91eb6-1b06-490b-893f-df34c0634947")
+	portfolio := (make([]market.Holding, 0))
+	testUser.Portfolio = &portfolio
+	testUser.Deposit(100000.0)
+
+	gameSession := market.NewSession(admin)
+	gameSession.AddUser(testUser)
+
+	game := market.GameInstance{Running: true, ID: 1, TickRate: tickRate, Market: market.NewMarket()}
 	gameSession.SetGameInstance(&game)
 
 	// TODO: Possibly clean up and move to Game.go?
@@ -60,7 +69,7 @@ func main() {
 		for game.Running {
 			game.Tick()
 			if DEBUG {
-				fmt.Println(game)
+				//fmt.Println(game)
 			}
 			time.Sleep(game.TickRate)
 		}

@@ -1,0 +1,9 @@
+Current:
+  ! user matching - if given an active uuid, retrieve the user object and re-map the connection to the current one !
+
+  user creation
+  user joining/leaving sessions
+  session creation
+
+Tasks:
+  sess.SyncState() on any session event (in MapEvent())

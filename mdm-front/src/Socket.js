@@ -1,13 +1,19 @@
 import Cookies from 'js-cookies';
 
 export default class Socket {
-  constructor(ip) {
+  constructor(ip, onmessage) {
     this.ip = ip;
+    this.onmessage=onmessage;
     this.open();
+    this.data = [];
   }
 
   open = () => {
     this.socket = new WebSocket(this.ip);
+    this.socket.onmessage = (e) => {
+      this.data.push(e);
+      this.onmessage(e);
+    }
   }
 
   sendData = (action, data) => {
