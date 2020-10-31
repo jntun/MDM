@@ -18,7 +18,7 @@ type Message struct {
 
 func NewMessage(byteMsg []byte) *Message {
 	if os.Getenv("DEBUG") == "true" {
-		fmt.Println(string(byteMsg))
+		//fmt.Println(string(byteMsg))
 	}
 
 	msg := Message{}

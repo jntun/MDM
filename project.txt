@@ -7,3 +7,6 @@ Current:
 
 Tasks:
   sess.SyncState() on any session event (in MapEvent())
+
+Bugs:
+  First buy order not decreasing stock volume - need to debug user portfolio with stock info as well

@@ -1,7 +1,6 @@
 package market
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -32,7 +31,7 @@ func (user *User) Withdraw(amount float32) error {
 		user.balance -= amount
 		return nil
 	}
-	return errors.New(fmt.Sprintf("Erorr withdrawing from %v: %v", user, amount))
+	return fmt.Errorf("Erorr withdrawing from %v: %v", user, amount)
 }
 
 func (user *User) Deposit(amount float32) error {
@@ -41,7 +40,7 @@ func (user *User) Deposit(amount float32) error {
 		return nil
 	}
 
-	return errors.New(fmt.Sprintf("Erorr depositing into%v: %v", user, amount))
+	return fmt.Errorf("Error depositing into%v: %v", user, amount)
 }
 
 func (user *User) UpdateHolding(stock *Stock, volume int) error {

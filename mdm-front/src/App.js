@@ -1,5 +1,6 @@
 import React from 'react';
 import Socket from './Socket';
+import Commands from './Commands.js'
 import Market from './Market/Market.js'
 import Cookie from 'js-cookie';
 import axios from 'axios'
@@ -50,9 +51,6 @@ export default class App extends React.Component {
     this.socket.sendData("PING", {"body": null})
   }
 
-  socketData = (e) => {
-  }
-
   render() {
     var market;
     if(this.state.data !== null) {
@@ -64,8 +62,7 @@ export default class App extends React.Component {
     return (
       <div className="App">
         <p>UUID: {Cookie.get('uuid')}</p>
-        <button onClick={this.socketData}>SocketData</button><br/>
-        <button onClick={this.handleClick}>Ping</button><br/>
+        <Commands socket={this.socket}/>
         {market}
       </div>
     );

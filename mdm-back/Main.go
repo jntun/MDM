@@ -48,7 +48,7 @@ func main() {
 
 	tickRate := time.Minute * 2
 	if DEBUG {
-		tickRate = time.Second
+		tickRate = time.Second * 5
 	}
 
 	admin, _ := market.NewUser("admin", uuid.NewV4().String())
@@ -68,6 +68,7 @@ func main() {
 		fmt.Println("Starting market game...")
 		for game.Running {
 			game.Tick()
+			gameSession.SyncState()
 			if DEBUG {
 				//fmt.Println(game)
 			}

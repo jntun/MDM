@@ -3,46 +3,46 @@ package market
 import (
 	"log"
 	"os"
+
+	"github.com/gorilla/websocket"
+	ms "github.com/mitchellh/mapstructure"
 )
 
 // Event map
 const (
-	ping = "PING"
-	buy  = "BUY"
-	sell = "SELL"
+	ping     = "PING"
+	buy      = "BUY"
+	sell     = "SELL"
+	register = "REGISTER"
 )
 
-func MapEvent(sess *Session, message *Message) {
+func MapEvent(sess *Session, conn *websocket.Conn, message *Message) {
 	if os.Getenv("DEBUG") == "true" {
 		//fmt.Println("MessageObj:", *message)
 	}
+
 	var action Action
 
-	/*
-		-- Probably don't need this now --
-		user, err := sess.GetUser(message.UUID.String())
-		if err != nil {
-			log.Printf("Error getting user: %v", err)
-		}
-	*/
-
 	switch message.Action {
-	// TODO: Fulfill events
 	case buy:
-		action = BuyAction{
-			UUID:   message.UUID.String(),
-			Ticker: message.Body.(map[string]interface{})["ticker"].(string),
-			Volume: int(message.Body.(map[string]interface{})["volume"].(float64)),
-		}
+		action = BuyAction{UUID: message.UUID.String()}
 	case sell:
 		action = SellAction{}
 	case ping:
 		action = PingAction{}
+	case register:
+		action = RegisterAction{uuid: message.UUID.String(), conn: conn}
 	}
 
-	err := action.DoAction(sess)
+	err := ms.Decode(message.Body, &action)
+	if err != nil {
+		log.Println(err)
+	}
+
+	err = action.DoAction(sess)
 	if err != nil {
 		log.Printf("Error mapping event: %v", err)
+		return
 	}
 
 	sess.SyncState()

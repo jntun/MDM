@@ -1,7 +1,6 @@
 package market
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/gorilla/websocket"
@@ -13,15 +12,15 @@ type Action interface {
 }
 
 type BuyAction struct {
-	UUID   string `json:"uuid"`
+	UUID   string
 	Ticker string
 	Volume int
 }
 
 func (buy BuyAction) DoAction(sess *Session) error {
-	user, err := sess.GetUser(buy.UUID)
-	if err != nil {
-		return err
+	user := sess.GetUser(buy.UUID)
+	if user == nil {
+		return fmt.Errorf("%s - not found in session", buy.UUID)
 	}
 
 	stock, err := sess.Game.Market.GetStock(buy.Ticker)
@@ -30,7 +29,7 @@ func (buy BuyAction) DoAction(sess *Session) error {
 	}
 
 	if !stock.CanBuy(buy.Volume, user.GetBalance()) {
-		return errors.New(fmt.Sprintf("BuyAction: %s cannot buy %d %s", user.Name, buy.Volume, buy.Ticker))
+		return fmt.Errorf("BuyAction: %s cannot buy %d %s", user.Name, buy.Volume, buy.Ticker)
 	}
 
 	err = user.UpdateHolding(stock, buy.Volume)
@@ -44,7 +43,7 @@ func (buy BuyAction) DoAction(sess *Session) error {
 		return err
 	}
 
-	fmt.Printf("%s bought: %s for %v | Balance: %v\n", user.Name, stock.Ticker, cost, user.GetBalance())
+	fmt.Printf("%s bought: %s for %v | Balance: %v | %v\n", user.Name, stock.Ticker, cost, user.GetBalance(), stock)
 	return nil
 }
 
@@ -69,17 +68,27 @@ func (act PingAction) DoAction(sess *Session) error {
 
 type RegisterAction struct {
 	uuid string
+	Name string `json:"name,omitempty"`
 	conn *websocket.Conn
 }
 
 func (reg RegisterAction) DoAction(sess *Session) error {
 	// Check for if user is already in session
-	user, err := sess.GetUser(reg.uuid)
-	if err == nil {
+	user := sess.GetUser(reg.uuid)
+	if user != nil {
+		fmt.Printf("User: %s found in session, updating connection...\n", user.Name)
 		user.Conn = reg.conn
 		return nil
 	}
 	// If not make them
 	// sess.NewUser(reg.
+	fmt.Printf("Creating new user object...")
+	user, err := NewUser(reg.Name, reg.uuid)
+	if err != nil {
+		return err
+	}
+	user.Conn = reg.conn
+
+	sess.AddUser(user)
 	return nil
 }
