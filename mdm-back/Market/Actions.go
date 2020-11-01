@@ -42,6 +42,7 @@ func (buy BuyAction) DoAction(sess *Session) error {
 	if err != nil {
 		return err
 	}
+	stock.Volume -= buy.Volume
 
 	fmt.Printf("%s bought: %s for %v | Balance: %v | %v\n", user.Name, stock.Ticker, cost, user.GetBalance(), stock)
 	return nil

@@ -12,18 +12,18 @@ import (
 var LIMIT float32 = 1000000000.0
 
 type User struct {
-	Name      string       `json:"username,omitempty"`
-	Timestamp *time.Time   `json:"timestamp,omitempty"`
-	UUID      *satori.UUID `json:"uuid,omitempty"`
-	Portfolio *[]Holding
+	Name      string              `json:"username,omitempty"`
+	Timestamp *time.Time          `json:"timestamp,omitempty"`
+	UUID      *satori.UUID        `json:"uuid,omitempty"`
+	Portfolio map[string]*Holding `json:"portfolio"`
 	balance   float32
 	Conn      *websocket.Conn `json:"-"`
 	Cookie    *http.Cookie    `json:"-"`
 }
 
 type Holding struct {
-	Asset  *Stock
-	Volume int
+	Asset  *Stock `json:"asset"`
+	Volume int    `json:"volume"`
 }
 
 func (user *User) Withdraw(amount float32) error {
@@ -44,19 +44,21 @@ func (user *User) Deposit(amount float32) error {
 }
 
 func (user *User) UpdateHolding(stock *Stock, volume int) error {
-	for _, holding := range *user.Portfolio {
-		if holding.Asset == stock && holding.Volume-volume >= 0 {
+	holding := user.Portfolio[stock.Ticker]
+	if holding == nil {
+		holding := &Holding{stock, volume}
+		user.Portfolio[stock.Ticker] = holding
+		return nil
+	}
+	/*
+		if holding.Volume != 0 || holding.Volume-volume >= 0 {
 			holding.Volume += volume
-			holding.Asset.Volume -= volume
 			return nil
 		}
-	}
-
-	// Holding not found, so need to add
-	holding := Holding{Asset: stock, Volume: volume}
-	newPortfolio := append(*user.Portfolio, holding)
-	user.Portfolio = &newPortfolio
+	*/
+	holding.Volume += volume
 	return nil
+	//return fmt.Errorf("%s can't update holding: %s | volume: %d", user.Name, stock.Ticker, volume)
 }
 
 func (user *User) SetUUID(newUUID string) error {
@@ -74,7 +76,7 @@ func (user *User) GetWorth() float32 {
 }
 
 func (user *User) GetPortfolioVolume(ticker string) int {
-	for _, holding := range *user.Portfolio {
+	for _, holding := range user.Portfolio {
 		if holding.Asset.Ticker == ticker {
 			return holding.Volume
 		}
@@ -98,6 +100,7 @@ func NewUser(name string, uuid string) (*User, error) {
 		return nil, err
 	}
 
-	player := User{Name: name, Timestamp: &currentTime, UUID: &playerUUID}
+	portfolio := make(map[string]*Holding)
+	player := User{Name: name, Timestamp: &currentTime, UUID: &playerUUID, Portfolio: portfolio, balance: 10000}
 	return &player, nil
 }

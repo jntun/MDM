@@ -7,6 +7,8 @@ Current:
 
 Tasks:
   sess.SyncState() on any session event (in MapEvent())
+  move Portfolio/Holding to map[Stock]Holding
+  Change socket.js to use message functions - socket.Ping() or socket.Buy()
 
 Bugs:
   First buy order not decreasing stock volume - need to debug user portfolio with stock info as well

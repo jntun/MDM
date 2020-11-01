@@ -25,9 +25,7 @@ export default class Market extends React.Component {
 
     return (
       <div id="market-container">
-
-        <button onClick={this.test}>Click me</button>
-      {stocks}
+        {stocks}
       </div>
     );
   }

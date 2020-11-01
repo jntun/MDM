@@ -19,9 +19,10 @@ var upgrader = websocket.Upgrader{
 
 // Session represents the logic that connects all users for a given instance
 type Session struct {
-	Admin *User            `json:"admin,omitempty"`
-	Users map[string]*User `json:"users,omitempty"`
-	Game  *GameInstance    `json:"game"`
+	Admin   *User            `json:"admin,omitempty"`
+	Users   map[string]*User `json:"users,omitempty"`
+	Game    *GameInstance    `json:"game"`
+	syncing bool             `json:"-"`
 }
 
 func (sess *Session) SetGameInstance(game *GameInstance) {
@@ -61,27 +62,29 @@ func (sess Session) SocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}()
-
-	/*
-		go func() {
-			for true {
-				conn.WriteJSON(sess)
-				time.Sleep(time.Millisecond * 500)
-			}
-		}()
-	*/
 }
 
 // SyncState writes the session state to all given
 // player connections
-func (sess Session) SyncState() {
-	fmt.Println("Syncing state...")
-	for _, user := range sess.Users {
-		if user.Conn != nil {
-			user.Conn.WriteJSON(sess)
-		} else {
-			log.Printf("%s does not have active connection object. Unable to sync", user.Name)
+// sess.syncing is a posssible work-around for concurrent writes to connections
+// not sure if actually works
+func (sess *Session) SyncState() {
+	if !sess.syncing {
+		sess.syncing = true
+		fmt.Println("Syncing state...")
+		for _, user := range sess.Users {
+			if user.Conn != nil {
+				err := user.Conn.WriteJSON(sess)
+				if err != nil {
+					log.Printf("SyncState: %v", err)
+				}
+			} else {
+				log.Printf("%s does not have active connection object. Unable to sync", user.Name)
+			}
 		}
+		sess.syncing = false
+	} else {
+		fmt.Println("Skipping sync event...")
 	}
 }
 

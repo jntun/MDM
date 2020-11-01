@@ -11,7 +11,7 @@ export default class Commands extends React.Component {
 
 
   Register = (e) => {
-    this.props.socket.sendData("REGISTER", {})
+    this.props.socket.sendData("REGISTER", {name: null});
   }
 
   render() {

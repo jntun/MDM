@@ -10,6 +10,9 @@ export default class Socket {
 
   open = () => {
     this.socket = new WebSocket(this.ip);
+    this.socket.onopen = (e) => {
+      this.sendData("REGISTER", null)
+    }
     this.socket.onmessage = (e) => {
       this.data.push(e);
       this.onmessage(e);

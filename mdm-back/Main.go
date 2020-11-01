@@ -52,13 +52,8 @@ func main() {
 	}
 
 	admin, _ := market.NewUser("admin", uuid.NewV4().String())
-	testUser, _ := market.NewUser("test", "fce91eb6-1b06-490b-893f-df34c0634947")
-	portfolio := (make([]market.Holding, 0))
-	testUser.Portfolio = &portfolio
-	testUser.Deposit(100000.0)
 
 	gameSession := market.NewSession(admin)
-	gameSession.AddUser(testUser)
 
 	game := market.GameInstance{Running: true, ID: 1, TickRate: tickRate, Market: market.NewMarket()}
 	gameSession.SetGameInstance(&game)

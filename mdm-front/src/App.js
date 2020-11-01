@@ -30,9 +30,9 @@ export default class App extends React.Component {
   }
 
   update = (e) => {
-  console.log("--Message received--")
+    //console.log(e["data"])
   try {
-        var jsonData = JSON.parse(this.socket.data[this.socket.data.length-1]["data"]);
+        var jsonData = JSON.parse(e["data"]);
         this.setState({data: jsonData});
       } catch(e) {
         console.log(e)
@@ -47,14 +47,12 @@ export default class App extends React.Component {
     })
   }
 
-  handleClick = (e) => {
-    this.socket.sendData("PING", {"body": null})
-  }
-
   render() {
+    var portfolio;
     var market;
     if(this.state.data !== null) {
       market = <Market socket={this.socket} marketData={this.state.data.game.Market}/>
+      console.log(this.state.data.users[Cookie.get('uuid')]);
     } else {
       market = <Market socket={this.socket} marketData={this.state.data}/>
     }
