@@ -53,9 +53,35 @@ func (buy BuyAction) String() string {
 }
 
 type SellAction struct {
+	UUID   string
+	Ticker string
+	Volume int
 }
 
-func (act SellAction) DoAction(sess *Session) error {
+func (sell SellAction) DoAction(sess *Session) error {
+	fmt.Println(sell.UUID)
+	user := sess.GetUser(sell.UUID)
+	if user == nil {
+		return fmt.Errorf("%s - not found in session", sell.UUID)
+	}
+
+	stock, err := sess.Game.Market.GetStock(sell.Ticker)
+	if err != nil {
+		return err
+	}
+
+	err = user.CanSellHolding(stock, sell.Volume)
+	if err != nil {
+		return err
+	}
+
+	user.UpdateHolding(stock, -sell.Volume)
+
+	amount := (stock.Price * float32(sell.Volume))
+	fmt.Println("here:", amount)
+	user.Deposit(amount)
+
+	fmt.Printf("%s sold: %s for %v | Balance: %v | %v\n", user.Name, stock.Ticker, amount, user.GetBalance(), stock)
 	return nil
 }
 

@@ -8,11 +8,12 @@ export default class Stock extends React.Component {
   }
 
   buyAction = (e, volume) => {
-    this.props.socket.sendData("BUY", {ticker: this.props.ticker, volume: volume})
+    //this.props.socket.sendData("BUY", {ticker: this.props.ticker, volume: volume})
+    this.props.socket.Buy(this.props.ticker, volume);
   }
 
   sellAction = (e, volume) => {
-    this.props.socket.sendData("SELL", {ticker: this.props.ticker, volume: volume})
+    this.props.socket.Sell(this.props.ticker, volume);
   }
 
   render() {

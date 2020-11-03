@@ -11,7 +11,7 @@ export default class Socket {
   open = () => {
     this.socket = new WebSocket(this.ip);
     this.socket.onopen = (e) => {
-      this.sendData("REGISTER", null)
+      this.Register()
     }
     this.socket.onmessage = (e) => {
       this.data.push(e);
@@ -35,9 +35,19 @@ export default class Socket {
       }
   }
 
-  /*
-  sleep = async (ms) => {
-    return new Promise(resolve => setTimeout(resolve, ms));
+  Ping = () => {
+    this.sendData("PING", null)
   }
-  */
+
+  Register = () => {
+    this.sendData("REGISTER", null)
+  }
+
+  Buy = (ticker, volume) => {
+    this.sendData("BUY", {ticker: ticker, volume: volume})
+  }
+
+  Sell = (ticker, volume) => {
+    this.sendData("SELL", {ticker: ticker, volume: volume})
+  }
 }

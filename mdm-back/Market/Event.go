@@ -27,7 +27,7 @@ func MapEvent(sess *Session, conn *websocket.Conn, message *Message) {
 	case buy:
 		action = BuyAction{UUID: message.UUID.String()}
 	case sell:
-		action = SellAction{}
+		action = SellAction{UUID: message.UUID.String()}
 	case ping:
 		action = PingAction{}
 	case register:

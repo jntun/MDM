@@ -77,6 +77,7 @@ func (sess *Session) SyncState() {
 				err := user.Conn.WriteJSON(sess)
 				if err != nil {
 					log.Printf("SyncState: %v", err)
+					user.Conn = nil
 				}
 			} else {
 				log.Printf("%s does not have active connection object. Unable to sync", user.Name)

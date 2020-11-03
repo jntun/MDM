@@ -16,9 +16,9 @@ type User struct {
 	Timestamp *time.Time          `json:"timestamp,omitempty"`
 	UUID      *satori.UUID        `json:"uuid,omitempty"`
 	Portfolio map[string]*Holding `json:"portfolio"`
-	balance   float32
-	Conn      *websocket.Conn `json:"-"`
-	Cookie    *http.Cookie    `json:"-"`
+	Balance   float32             `json:"balance"`
+	Conn      *websocket.Conn     `json:"-"`
+	Cookie    *http.Cookie        `json:"-"`
 }
 
 type Holding struct {
@@ -27,16 +27,16 @@ type Holding struct {
 }
 
 func (user *User) Withdraw(amount float32) error {
-	if user.balance-amount >= 0.0 {
-		user.balance -= amount
+	if user.Balance-amount >= 0.0 {
+		user.Balance -= amount
 		return nil
 	}
 	return fmt.Errorf("Erorr withdrawing from %v: %v", user, amount)
 }
 
 func (user *User) Deposit(amount float32) error {
-	if user.balance+amount <= LIMIT {
-		user.balance += amount
+	if user.Balance+amount <= LIMIT {
+		user.Balance += amount
 		return nil
 	}
 
@@ -61,6 +61,19 @@ func (user *User) UpdateHolding(stock *Stock, volume int) error {
 	//return fmt.Errorf("%s can't update holding: %s | volume: %d", user.Name, stock.Ticker, volume)
 }
 
+func (user *User) CanSellHolding(stock *Stock, volume int) error {
+	holding := user.Portfolio[stock.Ticker]
+	if holding == nil {
+		return fmt.Errorf("%s cannot sell %s - holding doesn't exist", user.Name, stock.Ticker)
+	}
+
+	if volume > holding.Volume {
+		return fmt.Errorf("%s cannot sell %s - sell volume exceeds holding volume", user.Name, stock.Ticker)
+	}
+
+	return nil
+}
+
 func (user *User) SetUUID(newUUID string) error {
 	gen, err := satori.FromString(newUUID)
 	if err != nil {
@@ -72,7 +85,7 @@ func (user *User) SetUUID(newUUID string) error {
 }
 
 func (user *User) GetWorth() float32 {
-	return user.balance
+	return user.Balance
 }
 
 func (user *User) GetPortfolioVolume(ticker string) int {
@@ -85,7 +98,7 @@ func (user *User) GetPortfolioVolume(ticker string) int {
 }
 
 func (user *User) GetBalance() float32 {
-	return user.balance
+	return user.Balance
 }
 
 func (user User) String() string {
@@ -100,7 +113,11 @@ func NewUser(name string, uuid string) (*User, error) {
 		return nil, err
 	}
 
+	if name == "" {
+		name = "default-gen"
+	}
+
 	portfolio := make(map[string]*Holding)
-	player := User{Name: name, Timestamp: &currentTime, UUID: &playerUUID, Portfolio: portfolio, balance: 10000}
+	player := User{Name: name, Timestamp: &currentTime, UUID: &playerUUID, Portfolio: portfolio, Balance: 100000}
 	return &player, nil
 }

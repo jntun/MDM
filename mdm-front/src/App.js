@@ -1,9 +1,10 @@
 import React from 'react';
 import Socket from './Socket';
-import Commands from './Commands.js'
-import Market from './Market/Market.js'
+import Commands from './Commands.js';
+import Market from './Market/Market.js';
+import User from './Market/User.js';
 import Cookie from 'js-cookie';
-import axios from 'axios'
+import axios from 'axios';
 import './App.css';
 
 export default class App extends React.Component {
@@ -15,14 +16,7 @@ export default class App extends React.Component {
     if(Cookie.get('uuid') == null) {
       this.setCookie()
     }
-    /*
-    this.socket.onopen = () => {
-      this.socket.sendData({ping: true})
-    }
-    this.socket.onmessage = (e) => {
-      console.log(e);
-    }
-    */
+
     this.state = {stream: false, data: null}
   }
 
@@ -48,11 +42,11 @@ export default class App extends React.Component {
   }
 
   render() {
-    var portfolio;
     var market;
+    var user;
     if(this.state.data !== null) {
       market = <Market socket={this.socket} marketData={this.state.data.game.Market}/>
-      console.log(this.state.data.users[Cookie.get('uuid')]);
+        user = <User data={this.state.data.users[Cookie.get('uuid')]}/>
     } else {
       market = <Market socket={this.socket} marketData={this.state.data}/>
     }
@@ -61,6 +55,7 @@ export default class App extends React.Component {
       <div className="App">
         <p>UUID: {Cookie.get('uuid')}</p>
         <Commands socket={this.socket}/>
+        {user}
         {market}
       </div>
     );
