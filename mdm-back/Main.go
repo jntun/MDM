@@ -48,7 +48,7 @@ func main() {
 
 	tickRate := time.Minute * 2
 	if DEBUG {
-		tickRate = time.Second * 1
+		tickRate = time.Second * 5
 	}
 
 	admin, _ := market.NewUser("admin", uuid.NewV4().String())

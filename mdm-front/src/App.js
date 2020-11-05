@@ -46,7 +46,7 @@ export default class App extends React.Component {
     var user;
     if(this.state.data !== null) {
       market = <Market socket={this.socket} marketData={this.state.data.game.Market}/>
-        user = <User data={this.state.data.users[Cookie.get('uuid')]}/>
+        user = <User socket={this.socket} data={this.state.data.users[Cookie.get('uuid')]}/>
     } else {
       market = <Market socket={this.socket} marketData={this.state.data}/>
     }

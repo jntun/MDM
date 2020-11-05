@@ -3,6 +3,7 @@ package market
 import (
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -19,6 +20,7 @@ type User struct {
 	Balance   float32             `json:"balance"`
 	Conn      *websocket.Conn     `json:"-"`
 	Cookie    *http.Cookie        `json:"-"`
+	mu        sync.Mutex          `json:"-"`
 }
 
 type Holding struct {
@@ -61,6 +63,19 @@ func (user *User) UpdateHolding(stock *Stock, volume int) error {
 	//return fmt.Errorf("%s can't update holding: %s | volume: %d", user.Name, stock.Ticker, volume)
 }
 
+func (user *User) SendUpdate(sess *Session) error {
+	if user.Conn != nil {
+		user.mu.Lock()
+		defer user.mu.Unlock()
+		if err := user.Conn.WriteJSON(sess); err != nil {
+			user.Conn = nil
+			return err
+		}
+		return nil
+	}
+	return fmt.Errorf("%s doesn't have active connection", user.Name)
+}
+
 func (user *User) CanSellHolding(stock *Stock, volume int) error {
 	holding := user.Portfolio[stock.Ticker]
 	if holding == nil {
@@ -101,7 +116,7 @@ func (user *User) GetBalance() float32 {
 	return user.Balance
 }
 
-func (user User) String() string {
+func (user *User) String() string {
 	return fmt.Sprintf("%s -- %v | Worth:$%v | Balance:$%v |", user.Name, user.UUID, user.GetWorth(), user.GetBalance())
 }
 

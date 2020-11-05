@@ -50,4 +50,8 @@ export default class Socket {
   Sell = (ticker, volume) => {
     this.sendData("SELL", {ticker: ticker, volume: volume})
   }
+
+  UpdateUsername = (username) => {
+    this.sendData("USERNAME", {username: username})
+  }
 }

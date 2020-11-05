@@ -59,7 +59,6 @@ type SellAction struct {
 }
 
 func (sell SellAction) DoAction(sess *Session) error {
-	fmt.Println(sell.UUID)
 	user := sess.GetUser(sell.UUID)
 	if user == nil {
 		return fmt.Errorf("%s - not found in session", sell.UUID)
@@ -78,7 +77,6 @@ func (sell SellAction) DoAction(sess *Session) error {
 	user.UpdateHolding(stock, -sell.Volume)
 
 	amount := (stock.Price * float32(sell.Volume))
-	fmt.Println("here:", amount)
 	user.Deposit(amount)
 
 	fmt.Printf("%s sold: %s for %v | Balance: %v | %v\n", user.Name, stock.Ticker, amount, user.GetBalance(), stock)
@@ -117,5 +115,24 @@ func (reg RegisterAction) DoAction(sess *Session) error {
 	user.Conn = reg.conn
 
 	sess.AddUser(user)
+	return nil
+}
+
+type UsernameAction struct {
+	uuid     string
+	Username string `json:"username"`
+}
+
+func (act UsernameAction) DoAction(sess *Session) error {
+	user := sess.GetUser(act.uuid)
+	if act.Username == "" {
+		return fmt.Errorf("UsernameAction(): Provided empty username for %s", act.uuid)
+	}
+	if user == nil {
+		return fmt.Errorf("UsernameAction(): %s not found in session", act.uuid)
+	}
+
+	fmt.Printf("UsernameAction: %s changing name to %s...\n", user.Name, act.Username)
+	user.Name = act.Username
 	return nil
 }

@@ -2,7 +2,6 @@ package market
 
 import (
 	"log"
-	"os"
 
 	"github.com/gorilla/websocket"
 	ms "github.com/mitchellh/mapstructure"
@@ -10,17 +9,14 @@ import (
 
 // Event map
 const (
-	ping     = "PING"
-	buy      = "BUY"
-	sell     = "SELL"
-	register = "REGISTER"
+	ping       = "PING"
+	buy        = "BUY"
+	sell       = "SELL"
+	register   = "REGISTER"
+	updatename = "USERNAME"
 )
 
 func MapEvent(sess *Session, conn *websocket.Conn, message *Message) {
-	if os.Getenv("DEBUG") == "true" {
-		//fmt.Println("MessageObj:", *message)
-	}
-
 	var action Action
 
 	switch message.Action {
@@ -32,6 +28,8 @@ func MapEvent(sess *Session, conn *websocket.Conn, message *Message) {
 		action = PingAction{}
 	case register:
 		action = RegisterAction{uuid: message.UUID.String(), conn: conn}
+	case updatename:
+		action = UsernameAction{uuid: message.UUID.String()}
 	}
 
 	err := ms.Decode(message.Body, &action)
