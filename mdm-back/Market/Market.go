@@ -13,7 +13,7 @@ type Market struct {
 
 func (market *Market) Update() {
 	for _, stock := range market.Stocks {
-		stock.Price += 1
+		stock.Tick()
 	}
 }
 
@@ -24,17 +24,11 @@ func (market *Market) GetStock(ticker string) (stock *Stock, err error) {
 		}
 	}
 
-	//return nil, error("%s - Could not find stock: %s", market.Ticker, ticker)
 	return nil, nil
 }
 
 func (market *Market) AddStock(stock *Stock) {
 	market.Stocks = append(market.Stocks, stock)
-}
-
-func (market *Market) BuyStock() error {
-
-	return nil
 }
 
 func (market Market) String() string {

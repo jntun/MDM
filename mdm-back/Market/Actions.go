@@ -107,7 +107,7 @@ func (reg RegisterAction) DoAction(sess *Session) error {
 	}
 	// If not make them
 	// sess.NewUser(reg.
-	fmt.Printf("Creating new user object...")
+	fmt.Println("Creating new user object...")
 	user, err := NewUser(reg.Name, reg.uuid)
 	if err != nil {
 		return err

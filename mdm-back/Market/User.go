@@ -2,7 +2,6 @@ package market
 
 import (
 	"fmt"
-	"net/http"
 	"sync"
 	"time"
 
@@ -19,8 +18,7 @@ type User struct {
 	Portfolio map[string]*Holding `json:"portfolio"`
 	Balance   float32             `json:"balance"`
 	Conn      *websocket.Conn     `json:"-"`
-	Cookie    *http.Cookie        `json:"-"`
-	mu        sync.Mutex          `json:"-"`
+	mu        sync.Mutex
 }
 
 type Holding struct {

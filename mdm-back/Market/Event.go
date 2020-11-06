@@ -1,6 +1,7 @@
 package market
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/gorilla/websocket"
@@ -30,6 +31,9 @@ func MapEvent(sess *Session, conn *websocket.Conn, message *Message) {
 		action = RegisterAction{uuid: message.UUID.String(), conn: conn}
 	case updatename:
 		action = UsernameAction{uuid: message.UUID.String()}
+	default:
+		fmt.Printf("Invalid event received: %v\n", message)
+		return
 	}
 
 	err := ms.Decode(message.Body, &action)
