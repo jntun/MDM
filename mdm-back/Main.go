@@ -50,6 +50,7 @@ func main() {
 	if DEBUG {
 		tickRate = time.Second * 1
 	}
+	ticker := time.NewTicker(tickRate)
 
 	admin, _ := market.NewUser("admin", uuid.NewV4().String())
 
@@ -61,18 +62,23 @@ func main() {
 	// TODO: Possibly clean up and move to Game.go?
 	go func() {
 		fmt.Println("Starting market game...")
-		for i := 0; game.Running; i++ {
+		for range ticker.C {
 			startGameTime := time.Now()
-			game.Tick()
+
+			if game.Running {
+				if DEBUG {
+					fmt.Println("Skipping game tick while paused...")
+				}
+				game.Tick()
+			}
+
 			gameSession.SyncState()
 			endGameTime := time.Now()
 			finalTime := endGameTime.Sub(startGameTime)
 
 			if DEBUG {
-				fmt.Printf("Game tick %d took: %v\n", i, finalTime)
+				fmt.Printf("Game tick took: %v\n", finalTime)
 			}
-
-			time.Sleep(game.TickRate)
 		}
 	}()
 
