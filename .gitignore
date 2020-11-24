@@ -1,3 +1,5 @@
 mdm-back/run.sh
 mdm-back/mdm-back
+mdm-back/stockmath/files/
+mdm-back/stockmath/__pycache__/
 mdm-front/node_modules

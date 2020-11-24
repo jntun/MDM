@@ -9,9 +9,12 @@ type Market struct {
 	Name   string
 	Ticker string
 	Stocks []*Stock
+	file   *FileHandler
 }
 
 func (market *Market) Update() {
+	market.file.Save(market)
+
 	for _, stock := range market.Stocks {
 		stock.Tick()
 	}
@@ -40,12 +43,15 @@ func (market Market) String() string {
 }
 
 func NewMarket(stocks ...*Stock) *Market {
-	market := &Market{Stocks: stocks}
+	market := &Market{Stocks: stocks, file: NewFileHandler()}
 
 	if os.Getenv("DEBUG") == "true" {
 		market.AddStock(NewStock("Apple Inc.", "AAPL", 100.0))
 		market.AddStock(NewStock("Advanced Micro Devices", "AMD", 83.17))
 		market.AddStock(NewStock("Nvidia Corportaion", "NVDA", 552.46))
+		market.AddStock(NewStock("Tesla Inc", "TSLA", 555.46))
+		market.AddStock(NewStock("Nikola Corportaion", "NKLA", 34.86))
+		market.AddStock(NewStock("DELL", "Dell Technologies", 70.81))
 	}
 
 	return market

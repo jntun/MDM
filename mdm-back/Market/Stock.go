@@ -21,8 +21,7 @@ func (stock *Stock) CanBuy(volume int, balance float32) bool {
 
 func (stock *Stock) Tick() {
 	// TODO
-	amount := 3
-	stock.Price += float32(amount)
+	stock.Price += float32(3)
 }
 
 func (stock Stock) String() string {

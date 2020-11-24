@@ -12,6 +12,7 @@ from random import seed as randseed
 
 randseed()
 
+'''
 def append_interval(domain, codomain, StockFunctionInstance, start_int, stop_int):
     i = start_int
     while i < stop_int:
@@ -55,3 +56,4 @@ algorithm(1000, 200, x, y, stock)
 
 plt.plot(x,y)
 plt.show()
+'''
