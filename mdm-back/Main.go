@@ -64,13 +64,13 @@ func main() {
 		fmt.Println("Starting market game...")
 		for range ticker.C {
 			startGameTime := time.Now()
-
 			if game.Running {
-				if DEBUG {
-					fmt.Println("Skipping game tick while paused...")
-				}
 				game.Tick()
-			}
+			} else {
+                          if DEBUG {
+                            fmt.Println("Skipping game tick while paused...")
+                          }
+                        }
 
 			gameSession.SyncState()
 			endGameTime := time.Now()
@@ -91,4 +91,8 @@ func main() {
 	}
 
 	log.Fatal(s.ListenAndServe())
+}
+
+func startup() string {
+  return ""
 }
