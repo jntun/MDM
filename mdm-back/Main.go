@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/Nastyyy/mdm-back/config"
 	"github.com/Nastyyy/mdm-back/market"
 	uuid "github.com/satori/go.uuid"
 )
@@ -15,84 +16,79 @@ const DEBUG bool = true
 
 // Generates random UUID and writes response with it
 func authorize(w http.ResponseWriter, r *http.Request) {
-	(w).Header().Set("Access-Control-Allow-Origin", "*")
+    (w).Header().Set("Access-Control-Allow-Origin", "*")
 
-	cookie, err := r.Cookie("uuid")
-	if err != nil {
-		fmt.Println("User does not have uuid")
-		uid := uuid.NewV4()
-		w.Write([]byte(uid.String()))
-	} else {
-		fmt.Println(cookie)
-	}
+    cookie, err := r.Cookie("uuid")
+    if err != nil {
+            uid := uuid.NewV4()
+            log.Printf("User does not have uuid - assigning: %s", uid)
+            w.Write([]byte(uid.String()))
+    } else {
+            fmt.Println(cookie)
+    }
 }
 
 func getUsername(w http.ResponseWriter, r *http.Request) {
-	(w).Header().Set("Access-Control-Allow-Origin", "*")
+    (w).Header().Set("Access-Control-Allow-Origin", "*")
 
-	cookie, err := r.Cookie("uuid")
-	if err != nil {
-		log.Printf("/getusername: Error getting uuid cookie %v", err)
-	}
+    cookie, err := r.Cookie("uuid")
+    if err != nil {
+            log.Printf("/getusername: Error getting uuid cookie %v", err)
+    }
 
-	// TODO: Search session for user with matching uuid and write username
-	fmt.Println(cookie)
+    // TODO: Search session for user with matching uuid and write username
+    fmt.Println(cookie)
 }
 
 func main() {
-	if DEBUG {
-		os.Setenv("DEBUG", "true")
-	} else {
-		os.Setenv("DEBUG", "false")
-	}
+    if DEBUG {
+            os.Setenv("DEBUG", "true")
+            config.EnableDebug()
+            //config.DEBUG_PERF = true
+            //config.EnableAllDebug()
+    } 
 
-	tickRate := time.Minute * 2
-	if DEBUG {
-		tickRate = time.Second * 1
-	}
-	ticker := time.NewTicker(tickRate)
+    ticker := config.Ticker()
 
-	admin, _ := market.NewUser("admin", uuid.NewV4().String())
+    /* Default admin and session */
+    admin, _ := market.NewUser("admin", uuid.NewV4().String())
+    gameSession := market.NewSession(admin)
 
-	gameSession := market.NewSession(admin)
+    /* Game instance */
+    game := market.GameInstance{Running: true, ID: 1, Ticker: ticker, Market: market.NewMarket()}
+    gameSession.SetGameInstance(&game)
 
-	game := market.GameInstance{Running: true, ID: 1, TickRate: tickRate, Market: market.NewMarket()}
-	gameSession.SetGameInstance(&game)
+    /* Game instance loop */
+    // TODO: Possibly clean up and move to Game.go?
+    fmt.Println("[Main] Starting market game...")
+    go func() {
+        for range ticker.C {
+            startGameTime := time.Now()
+            if gameSession.Game.Running {
+                gameSession.Game.Tick()
+            } else {
+                config.VerboseLog(fmt.Sprintf("[Game-%d] Skipping game tick while paused...", gameSession.Game.ID))
+            }
 
-	// TODO: Possibly clean up and move to Game.go?
-	go func() {
-		fmt.Println("Starting market game...")
-		for range ticker.C {
-			startGameTime := time.Now()
-			if game.Running {
-				game.Tick()
-			} else {
-                          if DEBUG {
-                            fmt.Println("Skipping game tick while paused...")
-                          }
-                        }
+            gameSession.SyncState()
+            endGameTime := time.Now()
+            finalTime := endGameTime.Sub(startGameTime)
 
-			gameSession.SyncState()
-			endGameTime := time.Now()
-			finalTime := endGameTime.Sub(startGameTime)
+            config.PerfLog(fmt.Sprintf("[Game-%d] Tick took %v", gameSession.Game.ID, finalTime))
+        }
+    }()
 
-			if DEBUG {
-				fmt.Printf("Game tick took: %v\n", finalTime)
-			}
-		}
-	}()
+    // TODO: possible cmd interface?
 
-	fmt.Println("Starting HTTP server...")
-	http.HandleFunc("/", gameSession.SocketHandler)
-	http.HandleFunc("/authorize", authorize)
-	http.HandleFunc("/getusername", getUsername)
-	s := &http.Server{
-		Addr: ":8080",
-	}
+    fmt.Println("[Main] Starting HTTP server...")
+    http.HandleFunc("/", gameSession.SocketHandler)
+    http.HandleFunc("/authorize", authorize)
+    http.HandleFunc("/getusername", getUsername)
 
-	log.Fatal(s.ListenAndServe())
-}
+    s := &http.Server{
+            Addr: ":8080",
+    }
 
-func startup() string {
-  return ""
+    fmt.Println("")
+    log.Fatal(s.ListenAndServe())
 }

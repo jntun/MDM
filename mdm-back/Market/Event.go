@@ -43,7 +43,7 @@ func MapEvent(sess *Session, conn *websocket.Conn, message *Message) {
 
 	err = action.DoAction(sess)
 	if err != nil {
-		log.Printf("Error mapping event: %v", err)
+		log.Printf("[ERROR][MapEvent]%s\n", err)
 		return
 	}
 

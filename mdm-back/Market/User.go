@@ -2,9 +2,12 @@ package market
 
 import (
 	"fmt"
+	"log"
 	"sync"
 	"time"
 
+	"github.com/Nastyyy/mdm-back/config"
+	"github.com/Pallinder/go-randomdata"
 	"github.com/gorilla/websocket"
 	satori "github.com/satori/go.uuid"
 )
@@ -12,13 +15,13 @@ import (
 var LIMIT float32 = 1000000000.0
 
 type User struct {
-	Name      string              `json:"username,omitempty"`
-	Timestamp *time.Time          `json:"timestamp,omitempty"`
-	UUID      *satori.UUID        `json:"uuid,omitempty"`
+	Name      string              `json:"username"`
+	Timestamp *time.Time          `json:"timestamp"`
+	UUID      *satori.UUID        `json:"uuid"`
 	Portfolio map[string]*Holding `json:"portfolio"`
 	Balance   float32             `json:"balance"`
 	Conn      *websocket.Conn     `json:"-"`
-	mu        sync.Mutex
+	Mu        sync.Mutex
 }
 
 type Holding struct {
@@ -31,7 +34,7 @@ func (user *User) Withdraw(amount float32) error {
 		user.Balance -= amount
 		return nil
 	}
-	return fmt.Errorf("Erorr withdrawing from %v: %v", user, amount)
+	return fmt.Errorf("Error withdrawing from %v: %v", user, amount)
 }
 
 func (user *User) Deposit(amount float32) error {
@@ -40,7 +43,7 @@ func (user *User) Deposit(amount float32) error {
 		return nil
 	}
 
-	return fmt.Errorf("Error depositing into%v: %v", user, amount)
+	return fmt.Errorf("Error depositing into %v: %v", user, amount)
 }
 
 func (user *User) UpdateHolding(stock *Stock, volume int) error {
@@ -61,27 +64,33 @@ func (user *User) UpdateHolding(stock *Stock, volume int) error {
 	//return fmt.Errorf("%s can't update holding: %s | volume: %d", user.Name, stock.Ticker, volume)
 }
 
+// SendUpdate is how a session sends itself to the user struct
+// TODO: Hijack the payload here at the user level and determine what state to strip so the user
+// 	 only gets state that they *need*.
 func (user *User) SendUpdate(sess *Session) error {
 	if user.Conn != nil {
-		user.mu.Lock()
-		defer user.mu.Unlock()
+
+		if config.DEBUG_VERBOSE {
+			log.Printf("[%s] writing session...", user.Name)
+		}
+
 		if err := user.Conn.WriteJSON(sess); err != nil {
 			user.Conn = nil
 			return err
 		}
 		return nil
 	}
-	return fmt.Errorf("%s doesn't have active connection", user.Name)
+	return fmt.Errorf("[%s] doesn't have active connection", user.Name)
 }
 
 func (user *User) CanSellHolding(stock *Stock, volume int) error {
 	holding := user.Portfolio[stock.Ticker]
 	if holding == nil {
-		return fmt.Errorf("%s cannot sell %s - holding doesn't exist", user.Name, stock.Ticker)
+            return fmt.Errorf("[%s] cannot sell %s: holding doesn't exist", user.Name, stock.Ticker)
 	}
 
 	if volume > holding.Volume {
-		return fmt.Errorf("%s cannot sell %s - sell volume exceeds holding volume", user.Name, stock.Ticker)
+            return fmt.Errorf("[%s] cannot sell %s: sell volume exceeds holding volume", user.Name, stock.Ticker)
 	}
 
 	return nil
@@ -127,7 +136,7 @@ func NewUser(name string, uuid string) (*User, error) {
 	}
 
 	if name == "" {
-		name = "default-gen"
+		name = randomdata.State(randomdata.Large)
 	}
 
 	portfolio := make(map[string]*Holding)

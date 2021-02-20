@@ -2,6 +2,7 @@ package market
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/gorilla/websocket"
 )
@@ -29,7 +30,7 @@ func (buy BuyAction) DoAction(sess *Session) error {
 	}
 
 	if !stock.CanBuy(buy.Volume, user.GetBalance()) {
-		return fmt.Errorf("BuyAction: %s cannot buy %d %s", user.Name, buy.Volume, buy.Ticker)
+		return fmt.Errorf("[BuyAction] %s cannot buy %d %s", user.Name, buy.Volume, buy.Ticker)
 	}
 
 	err = user.UpdateHolding(stock, buy.Volume)
@@ -44,7 +45,7 @@ func (buy BuyAction) DoAction(sess *Session) error {
 	}
 	stock.Volume -= buy.Volume
 
-	fmt.Printf("%s bought: %s for %v | Balance: %v | %v\n", user.Name, stock.Ticker, cost, user.GetBalance(), stock)
+	log.Printf("[Main][BuyAction] %s bought %s for %v | Balance: %v | %v\n", user.Name, stock.Ticker, cost, user.GetBalance(), stock)
 	return nil
 }
 
@@ -98,20 +99,22 @@ type RegisterAction struct {
 }
 
 func (reg RegisterAction) DoAction(sess *Session) error {
-	// Check for if user is already in session
+
+	// Check if user is already in session
 	user := sess.GetUser(reg.uuid)
 	if user != nil {
 		fmt.Printf("User: %s found in session, updating connection...\n", user.Name)
 		user.Conn = reg.conn
 		return nil
 	}
+
 	// If not make them
 	// sess.NewUser(reg.
-	fmt.Println("Creating new user object...")
 	user, err := NewUser(reg.Name, reg.uuid)
 	if err != nil {
 		return err
 	}
+	log.Printf("[Main][RegisterAction] New user: %s", user)
 	user.Conn = reg.conn
 
 	sess.AddUser(user)
@@ -126,13 +129,13 @@ type UsernameAction struct {
 func (act UsernameAction) DoAction(sess *Session) error {
 	user := sess.GetUser(act.uuid)
 	if act.Username == "" {
-		return fmt.Errorf("UsernameAction(): Provided empty username for %s", act.uuid)
+		return fmt.Errorf("[ERROR][UsernameAction] Provided empty username for %s", act.uuid)
 	}
 	if user == nil {
-		return fmt.Errorf("UsernameAction(): %s not found in session", act.uuid)
+		return fmt.Errorf("[ERROR][UsernameAction] %s not found in session", act.uuid)
 	}
 
-	fmt.Printf("UsernameAction: %s changing name to %s...\n", user.Name, act.Username)
+	log.Printf("[Main][UsernameAction] %s changing name to %s...\n", user.Name, act.Username)
 	user.Name = act.Username
 	return nil
 }

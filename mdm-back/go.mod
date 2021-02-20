@@ -3,6 +3,7 @@ module github.com/Nastyyy/mdm-back
 go 1.12
 
 require (
+	github.com/Pallinder/go-randomdata v1.2.0
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/gorilla/websocket v1.4.1
 	github.com/kr/pretty v0.1.0 // indirect

@@ -24,13 +24,13 @@ export default class App extends React.Component {
   }
 
   update = (e) => {
-    //console.log(e["data"])
-  try {
+    //console.log(e);
+    try {
         var jsonData = JSON.parse(e["data"]);
         this.setState({data: jsonData});
-      } catch(e) {
-        console.log(e)
-      }
+    } catch(e) {
+        throw e;
+    }
   }
 
   setCookie() {
@@ -38,23 +38,23 @@ export default class App extends React.Component {
     console.log("No uuid found... \n Attempting to authorize with:", endpoint)
     axios.get(endpoint).then((resp) => {
       Cookie.set('uuid', resp.data) 
-    })
+    });
   }
 
   render() {
     var market;
     var user;
     if(this.state.data !== null) {
-      market = <Market socket={this.socket} marketData={this.state.data.game.Market}/>
+        market = <Market socket={this.socket} marketData={this.state.data.game.Market}/>
         user = <User socket={this.socket} data={this.state.data.users[Cookie.get('uuid')]}/>
     } else {
-      market = <Market socket={this.socket} marketData={this.state.data}/>
+        market = <Market socket={this.socket} marketData={this.state.data}/>
     }
 
     return (
       <div className="App">
-        <p>UUID: {Cookie.get('uuid')}</p>
-        <Commands socket={this.socket}/>
+        {/* <p>UUID: {Cookie.get('uuid')}</p> */}
+        {/* <Commands socket={this.socket}/>  */}
         {user}
         {market}
       </div>

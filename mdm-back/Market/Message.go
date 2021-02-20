@@ -3,8 +3,8 @@ package market
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 
+        "github.com/Nastyyy/mdm-back/config"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -17,14 +17,12 @@ type Message struct {
 }
 
 func NewMessage(byteMsg []byte) *Message {
-	if os.Getenv("DEBUG") == "true" {
-		//fmt.Println(string(byteMsg))
-	}
+        config.VerboseLog(fmt.Sprintf("[NewMessage] %s", byteMsg))
 
 	msg := Message{}
 	err := json.Unmarshal(byteMsg, &msg)
 	if err != nil {
-		fmt.Println("NewMessage() - Error unmarshaling message: ", err, "\nMessage: ", string(byteMsg))
+		config.DebugLog(fmt.Sprintf("[NewMessage] - Error unmarshaling message: ", err,  string(byteMsg)))
 	}
 
 	return &msg

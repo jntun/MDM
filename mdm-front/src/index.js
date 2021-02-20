@@ -4,7 +4,7 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
-const backend = '10.0.0.168:8080'
+const backend = '10.0.0.195:8080'
 
 ReactDOM.render(<App endpoint={backend}/>, document.getElementById('root'));
 
