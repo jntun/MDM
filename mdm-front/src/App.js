@@ -27,6 +27,7 @@ export default class App extends React.Component {
     //console.log(e);
     try {
         var jsonData = JSON.parse(e["data"]);
+        //console.log(jsonData);
         this.setState({data: jsonData});
     } catch(e) {
         throw e;
@@ -53,8 +54,8 @@ export default class App extends React.Component {
 
     return (
       <div className="App">
-        {/* <p>UUID: {Cookie.get('uuid')}</p> */}
-        {/* <Commands socket={this.socket}/>  */}
+        <p>UUID: {Cookie.get('uuid')}</p>
+        <Commands socket={this.socket}/> 
         {user}
         {market}
       </div>

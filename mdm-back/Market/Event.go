@@ -15,6 +15,7 @@ const (
 	sell       = "SELL"
 	register   = "REGISTER"
 	updatename = "USERNAME"
+        admin      = "ADMIN"
 )
 
 func MapEvent(sess *Session, conn *websocket.Conn, message *Message) {
@@ -31,6 +32,8 @@ func MapEvent(sess *Session, conn *websocket.Conn, message *Message) {
 		action = RegisterAction{uuid: message.UUID.String(), conn: conn}
 	case updatename:
 		action = UsernameAction{uuid: message.UUID.String()}
+        case admin:
+                action = AdminAction{uuid: message.UUID.String()}
 	default:
 		fmt.Printf("Invalid event received: %v\n", message)
 		return
@@ -41,6 +44,11 @@ func MapEvent(sess *Session, conn *websocket.Conn, message *Message) {
 		log.Println(err)
 	}
 
+        // TODO: Refactor all action DoAction methods
+        // Refactor to action.DoAction(sess *Session, user *User) 
+        // All actions are events handled from users so it only makes sense
+        // that all actions are user context aware. Also it would lead to much cleaner
+        // access flow so I'm noot doing the uuid: message.UUID.String() over and over
 	err = action.DoAction(sess)
 	if err != nil {
 		log.Printf("[ERROR][MapEvent]%s\n", err)

@@ -80,7 +80,7 @@ func (user *User) SendUpdate(sess *Session) error {
 		}
 		return nil
 	}
-	return fmt.Errorf("[%s] doesn't have active connection", user.Name)
+	return fmt.Errorf("doesn't have active connection")
 }
 
 func (user *User) CanSellHolding(stock *Stock, volume int) error {

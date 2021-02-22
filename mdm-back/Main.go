@@ -21,7 +21,7 @@ func authorize(w http.ResponseWriter, r *http.Request) {
     cookie, err := r.Cookie("uuid")
     if err != nil {
             uid := uuid.NewV4()
-            log.Printf("User does not have uuid - assigning: %s", uid)
+            config.DebugLog(fmt.Sprintf("[Main] User does not have uuid - assigning: %s", uid))
             w.Write([]byte(uid.String()))
     } else {
             fmt.Println(cookie)
@@ -41,28 +41,25 @@ func getUsername(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-    if DEBUG {
-            os.Setenv("DEBUG", "true")
-            config.EnableDebug()
-            //config.DEBUG_PERF = true
-            //config.EnableAllDebug()
-    } 
-
-    ticker := config.Ticker()
+    args := os.Args[1:]
+    if len(args) != 0 {
+        flags(args)
+    }
 
     /* Default admin and session */
-    admin, _ := market.NewUser("admin", uuid.NewV4().String())
+    //admin, _ := market.NewUser("admin", uuid.NewV4().String())
+    admin, _ := market.NewUser("admin", "a5894330-c1b0-4115-9a41-5897bd9a291c")
     gameSession := market.NewSession(admin)
 
     /* Game instance */
-    game := market.GameInstance{Running: true, ID: 1, Ticker: ticker, Market: market.NewMarket()}
+    game := market.GameInstance{Running: true, ID: 1, Ticker: config.Ticker(), Market: market.NewMarket()}
     gameSession.SetGameInstance(&game)
 
     /* Game instance loop */
     // TODO: Possibly clean up and move to Game.go?
     fmt.Println("[Main] Starting market game...")
     go func() {
-        for range ticker.C {
+        for range gameSession.Game.Ticker.C {
             startGameTime := time.Now()
             if gameSession.Game.Running {
                 gameSession.Game.Tick()
@@ -91,4 +88,30 @@ func main() {
 
     fmt.Println("")
     log.Fatal(s.ListenAndServe())
+}
+
+func flags(args []string) {
+    config.FlagLog("[flags] Processing flags...")
+    for _, arg := range args {
+        config.FlagLog(arg)
+        if arg[0] == byte('-') {
+            switch string(arg[1]) {
+            case "d":
+                config.DEBUG = true
+                config.DebugLog("Enabled log.")
+            case "v":
+                config.DEBUG_VERBOSE = true
+                config.VerboseLog("Enabled log.")
+            case "g":
+                /* Game debug */
+
+                // Stock debug
+                config.DEBUG_STOCK = true
+                config.StockLog("initialized in debug mode")
+            case "p":
+                config.DEBUG_PERF = true
+                config.PerfLog("Enabled log.")
+            }
+        }
+    }
 }

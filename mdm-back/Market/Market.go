@@ -2,7 +2,8 @@ package market
 
 import (
 	"fmt"
-	"os"
+
+        "github.com/Nastyyy/mdm-back/config"
 )
 
 type Market struct {
@@ -45,7 +46,7 @@ func (market Market) String() string {
 func NewMarket(stocks ...*Stock) *Market {
 	market := &Market{Stocks: stocks, file: NewFileHandler()}
 
-	if os.Getenv("DEBUG") == "true" {
+	if config.DEBUG_STOCK {
 		market.AddStock(NewStock("Apple Inc.", "AAPL", 100.0))
 		market.AddStock(NewStock("Advanced Micro Devices", "AMD", 83.17))
 		market.AddStock(NewStock("Nvidia Corportaion", "NVDA", 552.46))

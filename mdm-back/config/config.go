@@ -5,13 +5,14 @@ import (
     "log"
 )
 
-const TICK_RATE = time.Minute * 2
-const DEBUG_TICK_RATE = time.Second * 1
+const TICK_RATE = time.Second
+const DEBUG_TICK_RATE = time.Millisecond * 1000
 
 var DEBUG         bool = false
 var DEBUG_VERBOSE bool = false
 var DEBUG_STOCK   bool = false
 var DEBUG_PERF    bool = false
+var DEBUG_FLAG    bool = false
 
 func DebugLog(msg string) {
     if DEBUG {
@@ -25,14 +26,31 @@ func VerboseLog(msg string) {
     }
 }
 
+func StockLog(msg string) {
+    if DEBUG_STOCK {
+        genLog("STCK", msg)
+    }
+}
+
 func PerfLog(msg string) {
     if DEBUG_PERF {
         genLog("PERF", msg)
     }
 }
 
+func FlagLog(msg string) {
+    if DEBUG_FLAG {
+        genLog("FLAG", msg)
+    }
+}
+
 func genLog(flag string, msg string) {
-    log.Printf("[%s]%s\n", flag, msg)
+    // Formatting check; If it starts with [ don't use a space becuase there's more tags
+    if msg[0] == byte('[') {
+        log.Printf("[%s]%s\n", flag, msg)
+    } else {
+        log.Printf("[%s] %s\n", flag, msg)
+    }
 }
 
 func EnableDebug() {
@@ -44,10 +62,11 @@ func EnableAllDebug() {
     DEBUG_VERBOSE = true
     DEBUG_STOCK   = true
     DEBUG_PERF    = true
+    DEBUG_FLAG    = true
 }
 
 func Ticker() *time.Ticker {
-    if DEBUG {
+    if DEBUG_STOCK {
             return time.NewTicker(DEBUG_TICK_RATE)
     } else {
             return time.NewTicker(TICK_RATE)

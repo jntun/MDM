@@ -21,7 +21,7 @@ type BuyAction struct {
 func (buy BuyAction) DoAction(sess *Session) error {
 	user := sess.GetUser(buy.UUID)
 	if user == nil {
-		return fmt.Errorf("%s - not found in session", buy.UUID)
+		return fmt.Errorf("[BuyAction] %s - not found in session", buy.UUID)
 	}
 
 	stock, err := sess.Game.Market.GetStock(buy.Ticker)
