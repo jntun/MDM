@@ -8,8 +8,10 @@ import (
 )
 
 type Action interface {
-	// Attempts to
-	DoAction(sess *Session) error
+    // Any struct that has a DoAction with *Session and *User 
+    // as parameters fits the criteria for being a game action. 
+    // error is subject to the action being performed.
+    DoAction(sess *Session, usr *User) error
 }
 
 type BuyAction struct {
@@ -18,8 +20,8 @@ type BuyAction struct {
 	Volume int
 }
 
-func (buy BuyAction) DoAction(sess *Session) error {
-	user := sess.GetUser(buy.UUID)
+func (buy BuyAction) DoAction(sess *Session, usr *User) error {
+	user := usr
 	if user == nil {
 		return fmt.Errorf("[BuyAction] %s - not found in session", buy.UUID)
 	}
@@ -59,7 +61,7 @@ type SellAction struct {
 	Volume int
 }
 
-func (sell SellAction) DoAction(sess *Session) error {
+func (sell SellAction) DoAction(sess *Session, usr *User) error {
 	user := sess.GetUser(sell.UUID)
 	if user == nil {
 		return fmt.Errorf("%s - not found in session", sell.UUID)
@@ -87,7 +89,7 @@ func (sell SellAction) DoAction(sess *Session) error {
 type PingAction struct {
 }
 
-func (act PingAction) DoAction(sess *Session) error {
+func (act PingAction) DoAction(sess *Session, usr *User) error {
 	fmt.Printf("PingAction: sess: %s\n", *sess)
 	return nil
 }
@@ -98,7 +100,7 @@ type RegisterAction struct {
 	conn *websocket.Conn
 }
 
-func (reg RegisterAction) DoAction(sess *Session) error {
+func (reg RegisterAction) DoAction(sess *Session, usr *User) error {
 
 	// Check if user is already in session
 	user := sess.GetUser(reg.uuid)
@@ -122,17 +124,13 @@ func (reg RegisterAction) DoAction(sess *Session) error {
 }
 
 type UsernameAction struct {
-	uuid     string
 	Username string `json:"username"`
 }
 
-func (act UsernameAction) DoAction(sess *Session) error {
-	user := sess.GetUser(act.uuid)
+func (act UsernameAction) DoAction(sess *Session, usr *User) error {
+	user := usr
 	if act.Username == "" {
-		return fmt.Errorf("[ERROR][UsernameAction] Provided empty username for %s", act.uuid)
-	}
-	if user == nil {
-		return fmt.Errorf("[ERROR][UsernameAction] %s not found in session", act.uuid)
+            return fmt.Errorf("[UsernameAction] Provided empty username for: %s", usr)
 	}
 
 	log.Printf("[Main][UsernameAction] %s changing name to %s...\n", user.Name, act.Username)
