@@ -95,23 +95,33 @@ func flags(args []string) {
     for _, arg := range args {
         config.FlagLog(arg)
         if arg[0] == byte('-') {
-            switch string(arg[1]) {
-            case "d":
-                config.DEBUG = true
-                config.DebugLog("Enabled log.")
-            case "v":
-                config.DEBUG_VERBOSE = true
-                config.VerboseLog("Enabled log.")
-            case "g":
-                /* Game debug */
-
-                // Stock debug
-                config.DEBUG_STOCK = true
-                config.StockLog("initialized in debug mode")
-            case "p":
-                config.DEBUG_PERF = true
-                config.PerfLog("Enabled log.")
+            err := flagMatch(string(arg[1]))
+            if err != nil {
+                fmt.Printf("[Error] %s\n", err)
             }
         }
     }
+}
+
+func flagMatch(flag string) error {
+    switch string(flag) {
+        case "d":
+            config.DEBUG = true
+            config.DebugLog("Enabled log.")
+        case "v":
+            config.DEBUG_VERBOSE = true
+            config.VerboseLog("Enabled log.")
+        case "g":
+            /* Game debug */
+
+            // Stock debug
+            config.DEBUG_STOCK = true
+            config.StockLog("initialized in debug mode")
+        case "p":
+            config.DEBUG_PERF = true
+            config.PerfLog("Enabled log.")
+        default:
+            return fmt.Errorf("invalid flag provided -%s", flag)
+    }
+    return nil
 }
