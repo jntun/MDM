@@ -11,6 +11,7 @@ import (
 type GameInstance struct {
 	Running       bool
 	ID            int
+        TickTotal     uint64       `json:"tick"`
 	Ticker        *time.Ticker `json:"-"`
 	TickTimestamp time.Time
 	Market        *Market
@@ -31,8 +32,9 @@ func (game *GameInstance) Stop() {
 }
 
 func (game *GameInstance) Tick() {
+        game.TickTotal++
 	game.TickTimestamp = time.Now()
-	game.Market.Update()
+	game.Market.Update(game.TickTotal)
 }
 
 func (game GameInstance) String() string {

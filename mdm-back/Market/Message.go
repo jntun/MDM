@@ -16,6 +16,10 @@ type Message struct {
 	Body interface{} `json:"body"`
 }
 
+func (msg *Message) String() string {
+    return fmt.Sprintf("UUID: %s | Action: \"%s\" | Body: %s", msg.UUID, msg.Action, msg.Body)
+}
+
 func NewMessage(byteMsg []byte) *Message {
         config.VerboseLog(fmt.Sprintf("[NewMessage] %s", byteMsg))
 

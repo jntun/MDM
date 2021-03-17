@@ -6,7 +6,7 @@ import (
 )
 
 const TICK_RATE = time.Second
-const DEBUG_TICK_RATE = time.Millisecond * 1000
+const DEBUG_TICK_RATE = time.Millisecond * 100
 
 var DEBUG         bool = false
 var DEBUG_VERBOSE bool = false
@@ -42,6 +42,15 @@ func FlagLog(msg string) {
     if DEBUG_FLAG {
         genLog("FLAG", msg)
     }
+}
+
+func MainLog(msg string) {
+    genLog("Main", msg)
+}
+
+func TestLog(msg string) {
+    log.Println("")
+    genLog("!!TEST!!", msg)
 }
 
 func genLog(flag string, msg string) {

@@ -2,8 +2,8 @@ package market
 
 import (
 	"fmt"
-	"log"
 
+        "github.com/Nastyyy/mdm-back/config"
 	"github.com/gorilla/websocket"
 )
 
@@ -47,7 +47,7 @@ func (buy BuyAction) DoAction(sess *Session, usr *User) error {
 	}
 	stock.Volume -= buy.Volume
 
-	log.Printf("[Main][BuyAction] %s bought %s for %v | Balance: %v | %v\n", user.Name, stock.Ticker, cost, user.GetBalance(), stock)
+	config.MainLog(fmt.Sprintf("[BuyAction] %s bought %s for %v | Balance: %v | %v\n", user.Name, stock.Ticker, cost, user.GetBalance(), stock))
 	return nil
 }
 
@@ -82,7 +82,7 @@ func (sell SellAction) DoAction(sess *Session, usr *User) error {
 	amount := (stock.Price * float32(sell.Volume))
 	user.Deposit(amount)
 
-	fmt.Printf("%s sold: %s for %v | Balance: %v | %v\n", user.Name, stock.Ticker, amount, user.GetBalance(), stock)
+	config.MainLog(fmt.Sprintf("%s sold: %s for %v | Balance: %v | %v\n", user.Name, stock.Ticker, amount, user.GetBalance(), stock))
 	return nil
 }
 
@@ -90,12 +90,12 @@ type PingAction struct {
 }
 
 func (act PingAction) DoAction(sess *Session, usr *User) error {
-	fmt.Printf("PingAction: sess: %s\n", *sess)
+	config.DebugLog(fmt.Sprintf("PingAction: sess: %s\n", *sess))
 	return nil
 }
 
 type RegisterAction struct {
-	uuid string
+	UUID string
 	Name string `json:"name,omitempty"`
 	conn *websocket.Conn
 }
@@ -103,7 +103,8 @@ type RegisterAction struct {
 func (reg RegisterAction) DoAction(sess *Session, usr *User) error {
 
 	// Check if user is already in session
-	user := sess.GetUser(reg.uuid)
+	user := sess.GetUser(reg.UUID)
+        //user = usr
 	if user != nil {
 		fmt.Printf("User: %s found in session, updating connection...\n", user.Name)
 		user.Conn = reg.conn
@@ -112,11 +113,11 @@ func (reg RegisterAction) DoAction(sess *Session, usr *User) error {
 
 	// If not make them
 	// sess.NewUser(reg.
-	user, err := NewUser(reg.Name, reg.uuid)
+	user, err := NewUser(reg.Name, reg.UUID)
 	if err != nil {
 		return err
 	}
-	log.Printf("[Main][RegisterAction] New user: %s", user)
+	config.MainLog(fmt.Sprintf("[RegisterAction] %s", user))
 	user.Conn = reg.conn
 
 	sess.AddUser(user)
@@ -133,7 +134,7 @@ func (act UsernameAction) DoAction(sess *Session, usr *User) error {
             return fmt.Errorf("[UsernameAction] Provided empty username for: %s", usr)
 	}
 
-	log.Printf("[Main][UsernameAction] %s changing name to %s...\n", user.Name, act.Username)
+	config.MainLog(fmt.Sprintf("[UsernameAction] %s changed name to %s...\n", user.Name, act.Username))
 	user.Name = act.Username
 	return nil
 }

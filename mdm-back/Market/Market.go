@@ -13,11 +13,11 @@ type Market struct {
 	file   *FileHandler
 }
 
-func (market *Market) Update() {
+func (market *Market) Update(tick uint64) {
 	market.file.Save(market)
 
 	for _, stock := range market.Stocks {
-		stock.Tick()
+		stock.Tick(tick)
 	}
 }
 
@@ -48,11 +48,11 @@ func NewMarket(stocks ...*Stock) *Market {
 
 	if config.DEBUG_STOCK {
 		market.AddStock(NewStock("Apple Inc.", "AAPL", 100.0))
-		market.AddStock(NewStock("Advanced Micro Devices", "AMD", 83.17))
-		market.AddStock(NewStock("Nvidia Corportaion", "NVDA", 552.46))
-		market.AddStock(NewStock("Tesla Inc", "TSLA", 555.46))
-		market.AddStock(NewStock("Nikola Corportaion", "NKLA", 34.86))
-		market.AddStock(NewStock("DELL", "Dell Technologies", 70.81))
+		//market.AddStock(NewStock("Advanced Micro Devices", "AMD", 83.17))
+		//market.AddStock(NewStock("Nvidia Corportaion", "NVDA", 552.46))
+		//market.AddStock(NewStock("Tesla Inc", "TSLA", 555.46))
+		//market.AddStock(NewStock("Nikola Corportaion", "NKLA", 34.86))
+		//market.AddStock(NewStock("Dell Technologies", "DELL", 70.81))
 	}
 
 	return market

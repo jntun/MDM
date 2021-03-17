@@ -6,9 +6,11 @@ import (
 	"net/http"
 	"os"
 	"time"
+        "strings"
 
 	"github.com/Nastyyy/mdm-back/config"
 	"github.com/Nastyyy/mdm-back/market"
+        "github.com/Nastyyy/mdm-back/stark"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -105,6 +107,10 @@ func flags(args []string) {
 
 func flagMatch(flag string) error {
     switch string(flag) {
+        // C for client or simply a hacky debug helper which mimics a user
+        case "C":
+        /******* TAKES OVER CONTROL FLOW - NO RETURN IF ENABLED *******/
+            starkUp()
         case "d":
             config.DEBUG = true
             config.DebugLog("Enabled log.")
@@ -124,4 +130,14 @@ func flagMatch(flag string) error {
             return fmt.Errorf("invalid flag provided -%s", flag)
     }
     return nil
+}
+
+// Headless, will never return
+func starkUp() {
+        big := strings.Repeat("=", 30)
+        small := strings.Repeat("*", 10)
+        fmt.Printf("%s\n%s Stark %s\n%s\n\n", big, small, small, big)
+
+        ret := stark.RunClient()
+        os.Exit(ret)
 }

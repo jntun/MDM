@@ -10,29 +10,29 @@ import (
 
 // Event map
 const (
-	ping       = "PING"
-	buy        = "BUY"
-	sell       = "SELL"
-	register   = "REGISTER"
-	updatename = "USERNAME"
-        admin      = "ADMIN"
+	PING       = "PING"
+	BUY        = "BUY"
+	SELL       = "SELL"
+	REGISTER   = "REGISTER"
+	UPDATENAME = "USERNAME"
+        ADMIN      = "ADMIN"
 )
 
 func MapEvent(sess *Session, conn *websocket.Conn, message *Message) {
 	var action Action
 
 	switch message.Action {
-	case buy:
+	case BUY:
 		action = BuyAction{UUID: message.UUID.String()}
-	case sell:
+	case SELL:
 		action = SellAction{UUID: message.UUID.String()}
-	case ping:
+	case PING:
 		action = PingAction{}
-	case register:
-		action = RegisterAction{uuid: message.UUID.String(), conn: conn}
-	case updatename:
+	case REGISTER:
+		action = RegisterAction{UUID: message.UUID.String(), conn: conn}
+	case UPDATENAME:
 		action = UsernameAction{}
-        case admin:
+        case ADMIN:
                 action = AdminAction{}
 
 	default:
@@ -46,7 +46,7 @@ func MapEvent(sess *Session, conn *websocket.Conn, message *Message) {
 	}
 
         usr := sess.Users[message.UUID.String()]
-        /*
+        /* Not sure about how to do this as of right now. Will have to revisit.
         if usr == nil {
             log.Printf("[ERROR][MapEvent] Could not find user in session: %s\n", message.UUID.String())
             err = action.DoAction(sess, nil)
@@ -61,7 +61,7 @@ func MapEvent(sess *Session, conn *websocket.Conn, message *Message) {
         // Refactor to action.DoAction(sess *Session, user *User) 
         // All actions are events handled from users so it only makes sense
         // that all actions are user context aware. Also it would lead to much cleaner
-        // access flow so I'm noot doing the uuid: message.UUID.String() over and over
+        // access flow so I'm not doing the uuid: message.UUID.String() over and over
         err = action.DoAction(sess, usr)
 	if err != nil {
 		log.Printf("[ERROR][MapEvent]%s\n", err)
