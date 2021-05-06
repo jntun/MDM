@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/Nastyyy/mdm-back/config"
 	"github.com/gorilla/websocket"
@@ -19,9 +20,22 @@ var upgrader = websocket.Upgrader{
 
 // Session represents the logic that connects all users for a given instance
 type Session struct {
-	Admin *User            `json:"admin,omitempty"`
-	Users map[string]*User `json:"users,omitempty"`
-	Game  *GameInstance    `json:"game"`
+	Admin      *User            `json:"admin,omitempty"`
+	Users      map[string]*User `json:"users,omitempty"`
+	Game       *GameInstance    `json:"game"`
+	syncTicker *time.Ticker
+}
+
+func (sess *Session) Start() {
+	/* Session sync loop */
+	go func() {
+		for range sess.syncTicker.C {
+			sess.SyncState()
+		}
+	}()
+
+	/* Game update loop */
+	go sess.Game.Start()
 }
 
 func (sess *Session) SocketHandler(w http.ResponseWriter, r *http.Request) {
@@ -52,20 +66,16 @@ func (sess *Session) SocketHandler(w http.ResponseWriter, r *http.Request) {
 // SyncState writes the session state to all given
 // player connections
 func (sess *Session) SyncState() {
-    config.VerboseLog("[Session] Syncing session state")
+	config.VerboseLog("[Session] Syncing session state")
 
-    for _, user := range sess.Users {
-            user.Mu.Lock()
-            defer user.Mu.Unlock()
-            err := user.SendUpdate(sess)
-            if err != nil {
-                config.VerboseLog(fmt.Sprintf("[ERROR][Session] Unable to write update to %s: %s", user.Name, err))
-            }
-    }
-}
-
-func (sess *Session) SetGameInstance(game *GameInstance) {
-	sess.Game = game
+	for _, user := range sess.Users {
+		user.Mu.Lock()
+		defer user.Mu.Unlock()
+		err := user.SendUpdate(sess)
+		if err != nil {
+			config.VerboseLog(fmt.Sprintf("[ERROR][Session] Unable to write update to %s: %s", user.Name, err))
+		}
+	}
 }
 
 func (sess *Session) AddUser(user *User) {
@@ -84,10 +94,10 @@ func (sess *Session) handleMessage(conn *websocket.Conn, byteMsg []byte) error {
 }
 
 func NewSession(admin *User) *Session {
-	session := Session{Admin: admin}
+	session := Session{Admin: admin, syncTicker: config.Ticker()}
 	users := make(map[string]*User)
 	session.Users = users
-	//session.Game = GameInstance{false, 1}
+	session.Game = &GameInstance{Running: true, ID: 1, Ticker: config.Ticker(), Market: NewMarket()}
 	return &session
 }
 
