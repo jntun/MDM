@@ -46,13 +46,14 @@ func (market Market) String() string {
 func NewMarket(stocks ...*Stock) *Market {
 	market := &Market{Stocks: stocks, file: NewFileHandler()}
 
-	if config.DEBUG_STOCK {
-		market.AddStock(NewStock("Apple Inc.", "AAPL", 100.0))
-		//market.AddStock(NewStock("Advanced Micro Devices", "AMD", 83.17))
-		//market.AddStock(NewStock("Nvidia Corportaion", "NVDA", 552.46))
-		//market.AddStock(NewStock("Tesla Inc", "TSLA", 555.46))
-		//market.AddStock(NewStock("Nikola Corportaion", "NKLA", 34.86))
-		//market.AddStock(NewStock("Dell Technologies", "DELL", 70.81))
+        market.AddStock(NewStock("Apple Inc.", "AAPL", 100.0))
+
+	if !config.DEBUG_STOCK {
+		market.AddStock(NewStock("Advanced Micro Devices", "AMD", 83.17))
+		market.AddStock(NewStock("Nvidia Corportaion", "NVDA", 552.46))
+		market.AddStock(NewStock("Tesla Inc", "TSLA", 555.46))
+		market.AddStock(NewStock("Nikola Corportaion", "NKLA", 34.86))
+		market.AddStock(NewStock("Dell Technologies", "DELL", 70.81))
 	}
 
 	return market

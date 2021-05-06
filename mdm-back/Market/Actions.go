@@ -3,15 +3,15 @@ package market
 import (
 	"fmt"
 
-        "github.com/Nastyyy/mdm-back/config"
+	"github.com/Nastyyy/mdm-back/config"
 	"github.com/gorilla/websocket"
 )
 
 type Action interface {
-    // Any struct that has a DoAction with *Session and *User 
-    // as parameters fits the criteria for being a game action. 
-    // error is subject to the action being performed.
-    DoAction(sess *Session, usr *User) error
+	// Any struct that has a DoAction with *Session and *User
+	// as parameters fits the criteria for being a game action.
+	// error is subject to the action being performed.
+	DoAction(sess *Session, usr *User) error
 }
 
 type BuyAction struct {
@@ -104,7 +104,7 @@ func (reg RegisterAction) DoAction(sess *Session, usr *User) error {
 
 	// Check if user is already in session
 	user := sess.GetUser(reg.UUID)
-        //user = usr
+	//user = usr
 	if user != nil {
 		fmt.Printf("User: %s found in session, updating connection...\n", user.Name)
 		user.Conn = reg.conn
@@ -124,6 +124,7 @@ func (reg RegisterAction) DoAction(sess *Session, usr *User) error {
 	return nil
 }
 
+// UsernameAction is for when a given session user wants to change thier appearance name but keep their identity
 type UsernameAction struct {
 	Username string `json:"username"`
 }
@@ -131,7 +132,7 @@ type UsernameAction struct {
 func (act UsernameAction) DoAction(sess *Session, usr *User) error {
 	user := usr
 	if act.Username == "" {
-            return fmt.Errorf("[UsernameAction] Provided empty username for: %s", usr)
+		return fmt.Errorf("[UsernameAction] Provided empty username for: %s", usr)
 	}
 
 	config.MainLog(fmt.Sprintf("[UsernameAction] %s changed name to %s...\n", user.Name, act.Username))

@@ -43,53 +43,54 @@ func getUsername(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-    args := os.Args[1:]
-    if len(args) != 0 {
-        flags(args)
-    }
-
-    /* Default admin and session */
-    //admin, _ := market.NewUser("admin", uuid.NewV4().String())
-    admin, _ := market.NewUser("admin", "a5894330-c1b0-4115-9a41-5897bd9a291c")
-    gameSession := market.NewSession(admin)
-
-    /* Game instance */
-    game := market.GameInstance{Running: true, ID: 1, Ticker: config.Ticker(), Market: market.NewMarket()}
-    gameSession.SetGameInstance(&game)
-
-    /* Game instance loop */
-    // TODO: Possibly clean up and move to Game.go?
-    fmt.Println("[Main] Starting market game...")
-    go func() {
-        for range gameSession.Game.Ticker.C {
-            startGameTime := time.Now()
-            if gameSession.Game.Running {
-                gameSession.Game.Tick()
-            } else {
-                config.VerboseLog(fmt.Sprintf("[Game-%d] Skipping game tick while paused...", gameSession.Game.ID))
-            }
-
-            gameSession.SyncState()
-            endGameTime := time.Now()
-            finalTime := endGameTime.Sub(startGameTime)
-
-            config.PerfLog(fmt.Sprintf("[Game-%d] Tick took %v", gameSession.Game.ID, finalTime))
+        args := os.Args[1:]
+        if len(args) != 0 {
+            flags(args)
         }
-    }()
 
-    // TODO: possible cmd interface?
+        /* Default admin and session */
+        //admin, _ := market.NewUser("admin", uuid.NewV4().String())
+        admin, _ := market.NewUser("admin", "857bb89c-a8bf-4a64-92f6-c224307a4286")
+        gameSession := market.NewSession(admin)
 
-    fmt.Println("[Main] Starting HTTP server...")
-    http.HandleFunc("/", gameSession.SocketHandler)
-    http.HandleFunc("/authorize", authorize)
-    http.HandleFunc("/getusername", getUsername)
+        /* Game instance */
+        game := market.GameInstance{Running: true, ID: 1, Ticker: config.Ticker(), Market: market.NewMarket()}
+        gameSession.SetGameInstance(&game)
 
-    s := &http.Server{
-            Addr: ":8080",
-    }
+        /* Game instance loop */
+        // TODO: Possibly clean up and move to Game.go?
+        fmt.Println("[Main] Starting market game...")
+        go func() {
+            for range gameSession.Game.Ticker.C {
+                startGameTime := time.Now()
+                if gameSession.Game.Running {
+                    gameSession.Game.Tick()
+                } else {
+                    config.VerboseLog(fmt.Sprintf("[Game-%d] Skipping game tick while paused...", gameSession.Game.ID))
+                }
 
-    fmt.Println("")
-    log.Fatal(s.ListenAndServe())
+                gameSession.SyncState()
+                endGameTime := time.Now()
+                finalTime := endGameTime.Sub(startGameTime)
+
+                config.VerboseLog(fmt.Sprintf("Tick: %d", gameSession.Game.TickTotal))
+                config.PerfLog(fmt.Sprintf("[Game-%d] Tick took %v", gameSession.Game.ID, finalTime))
+            }
+        }()
+
+        // TODO: possible cmd interface?
+
+        fmt.Println("[Main] Starting HTTP server...")
+        http.HandleFunc("/", gameSession.SocketHandler)
+        http.HandleFunc("/authorize", authorize)
+        http.HandleFunc("/getusername", getUsername)
+
+        s := &http.Server{
+                Addr: ":8080",
+        }
+
+        fmt.Println("")
+        log.Fatal(s.ListenAndServe())
 }
 
 func flags(args []string) {
@@ -106,30 +107,30 @@ func flags(args []string) {
 }
 
 func flagMatch(flag string) error {
-    switch string(flag) {
-        // C for client or simply a hacky debug helper which mimics a user
-        case "C":
-        /******* TAKES OVER CONTROL FLOW - NO RETURN IF ENABLED *******/
-            starkUp()
-        case "d":
-            config.DEBUG = true
-            config.DebugLog("Enabled log.")
-        case "v":
-            config.DEBUG_VERBOSE = true
-            config.VerboseLog("Enabled log.")
-        case "g":
-            /* Game debug */
+        switch string(flag) {
+            // C for client or simply a hacky debug helper which mimics a user
+            case "C":
+            /******* TAKES OVER CONTROL FLOW - NO RETURN IF ENABLED *******/
+                starkUp()
+            case "d":
+                config.DEBUG = true
+                config.DebugLog("Enabled log.")
+            case "v":
+                config.DEBUG_VERBOSE = true
+                config.VerboseLog("Enabled log.")
+            case "g":
+                /* Game debug */
 
-            // Stock debug
-            config.DEBUG_STOCK = true
-            config.StockLog("initialized in debug mode")
-        case "p":
-            config.DEBUG_PERF = true
-            config.PerfLog("Enabled log.")
-        default:
-            return fmt.Errorf("invalid flag provided -%s", flag)
-    }
-    return nil
+                // Stock debug
+                config.DEBUG_STOCK = true
+                config.StockLog("initialized in debug mode")
+            case "p":
+                config.DEBUG_PERF = true
+                config.PerfLog("Enabled log.")
+            default:
+                return fmt.Errorf("invalid flag provided -%s", flag)
+        }
+        return nil
 }
 
 // Headless, will never return

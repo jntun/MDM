@@ -59,7 +59,7 @@ func (sess *Session) SyncState() {
             defer user.Mu.Unlock()
             err := user.SendUpdate(sess)
             if err != nil {
-                config.DebugLog(fmt.Sprintf("[ERROR][Session] Unable to write update to %s: %s", user.Name, err))
+                config.VerboseLog(fmt.Sprintf("[ERROR][Session] Unable to write update to %s: %s", user.Name, err))
             }
     }
 }

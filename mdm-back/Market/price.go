@@ -54,20 +54,24 @@ func (lin *linear) value(i float64) float64 {
 }
 
 func (pf sine) String() string {
-    return fmt.Sprintf("Sine | Amp: %f | Per: %f | PhShf: %f | Trans: %f | X: %f", pf.amplitude, pf.period, pf.phaseShift, pf.translator, pf.x)
+        return fmt.Sprintf("Sine | Amp: %f | Perd: %f | PhShf: %f | Trans: %f | X: %f", pf.amplitude, pf.period, pf.phaseShift, pf.translator, pf.x)
 }
 
 func (lin linear) String() string {
-    return fmt.Sprintf("Linr | Slope: %f | Intercept: %f | X: %f", lin.slope, lin.translator, lin.x)
+        return fmt.Sprintf("Linr | Slope: %f | Intercept: %f | X: %f", lin.slope, lin.translator, lin.x)
 }
 
 func (pf PriceFunction) value(i float64) float64 {
+        config.StockLog(fmt.Sprintf("[pf.value] | pf.wave.value: %f + pf.volatility.value: %f + pf.trend.value: %f |", pf.wave.value(i), pf.volatility.value(i), pf.trend.value(i)))
         return pf.wave.value(i) + pf.volatility.value(i) + pf.trend.value(i)
 }
 
 func (pf *PriceFunction) NextPrice(i float64) float32 {
-        config.StockLog(fmt.Sprintf("NextPrice(): pf.value(%f) - %f", i, pf.value(i)))
-        return float32(pf.value(i))
+        price := pf.value(i)
+        if price < 0 {
+            price = 0.0
+        }
+        return float32(price)
 }
 
 func (pf PriceFunction) String() string {
@@ -75,8 +79,9 @@ func (pf PriceFunction) String() string {
 }
 
 func GeneratePriceFunc() *PriceFunction {
-    wave := &sine{1.0, 2*math.Pi, 0, 0, 0}
-    vola := &sine{1.0, 2, 0, 0, 0}
-    trnd := &linear{0.0, 1.0, 0}
-    return &PriceFunction{wave, vola, trnd}
+        //wave := &sine{1.0, 2*math.Pi, 0, 0, 0}
+        wave := &sine{0.01, 0.1, 0, 0, 0}
+        vola := &sine{0.01, 10, 0, 0, 0}
+        trnd := &linear{0.0, 1.0, 0}
+        return &PriceFunction{wave, vola, trnd}
 }

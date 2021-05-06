@@ -69,7 +69,6 @@ func (user *User) UpdateHolding(stock *Stock, volume int) error {
 // 	 only gets state that they *need*.
 func (user *User) SendUpdate(sess *Session) error {
 	if user.Conn != nil {
-
 		if config.DEBUG_VERBOSE {
 			log.Printf("[%s] writing session...", user.Name)
 		}
@@ -86,11 +85,11 @@ func (user *User) SendUpdate(sess *Session) error {
 func (user *User) CanSellHolding(stock *Stock, volume int) error {
 	holding := user.Portfolio[stock.Ticker]
 	if holding == nil {
-            return fmt.Errorf("[%s] cannot sell %s: holding doesn't exist", user.Name, stock.Ticker)
+		return fmt.Errorf("[%s] cannot sell %s: holding doesn't exist", user.Name, stock.Ticker)
 	}
 
 	if volume > holding.Volume {
-            return fmt.Errorf("[%s] cannot sell %s: sell volume exceeds holding volume", user.Name, stock.Ticker)
+		return fmt.Errorf("[%s] cannot sell %s: sell volume exceeds holding volume", user.Name, stock.Ticker)
 	}
 
 	return nil
