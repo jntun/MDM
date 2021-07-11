@@ -2,11 +2,11 @@ package stark
 
 import (
 	"fmt"
-	"log"
-
+	"github.com/Nastyyy/mdm-back/config"
 	"github.com/Nastyyy/mdm-back/market"
 	"github.com/gorilla/websocket"
 	suuid "github.com/satori/go.uuid"
+	"log"
 )
 
 type Client struct {
@@ -22,20 +22,24 @@ func (sc *Client) start() {
 
 	type t interface{}
 	body := map[string]t{
-		"test": true,
+		"admin-action": "resume",
 	}
+
 	err = sc.sendEvent(market.ADMIN, &market.AdminAction{Body: body})
 	if err != nil {
 		StarkError("sendEvent(): %s", err)
 	}
 
-	for {
+	/*for range time.Tick(time.Second) {
 		_, message, err := sc.conn.ReadMessage()
 		if err != nil {
 			StarkError("ReadMessage(): %s", err)
 		}
-		StarkLog("[Message]: %v", string(message))
-	}
+		_ = message
+		err = sc.sendEvent(market.ADMIN, &market.AdminAction{body})
+		//StarkLog("[Message]: %v", string(message))
+	}*/
+
 	return
 }
 
@@ -53,7 +57,11 @@ func (sc *Client) sendEvent(action string, actCall market.Action) error {
 // Gotcha
 // If we return/treat we die...
 func RunClient() int {
-	var endpoint string = "ws://jntun.com:8080"
+	var endpoint string
+	endpoint = "ws://jntun.com:8080"
+	if config.DEBUG {
+		endpoint = "ws://127.0.0.1:8080"
+	}
 	c, _, err := websocket.DefaultDialer.Dial(endpoint, nil)
 	if err != nil {
 		StarkError("RunClient(): %s", err)
