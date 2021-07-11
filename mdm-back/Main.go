@@ -22,7 +22,7 @@ func main() {
 	}
 
 	/* Default admin and session */
-	admin, _ := market.NewUser("admin", "857bb89c-a8bf-4a64-92f6-c224307a4286")
+	admin, _ := market.NewUser("default-admin", "")
 	gameSession := market.NewSession(admin)
 	fmt.Println("[Main] Starting market game...")
 	gameSession.Start()
