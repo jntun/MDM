@@ -126,10 +126,17 @@ func (user *User) String() string {
 	return fmt.Sprintf("%s -- %v | Worth:$%v | Balance:$%v |", user.Name, user.UUID, user.GetWorth(), user.GetBalance())
 }
 
-// NewUser creats and initializes a new user instance
+// NewUser creates and initializes a new user instance
 func NewUser(name string, uuid string) (*User, error) {
 	currentTime := time.Now()
-	playerUUID, err := satori.FromString(uuid)
+	var playerUUID satori.UUID
+	var err error
+
+	if uuid != "" {
+		playerUUID, err = satori.FromString(uuid)
+	} else {
+		playerUUID = satori.UUID{}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +145,6 @@ func NewUser(name string, uuid string) (*User, error) {
 		name = randomdata.State(randomdata.Large)
 	}
 
-	portfolio := make(map[string]*Holding)
-	player := User{Name: name, Timestamp: &currentTime, UUID: &playerUUID, Portfolio: portfolio, Balance: 100000}
+	player := User{Name: name, Timestamp: &currentTime, UUID: &playerUUID, Portfolio: make(map[string]*Holding), Balance: 100000}
 	return &player, nil
 }
