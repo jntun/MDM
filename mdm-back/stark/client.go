@@ -53,7 +53,7 @@ func (sc *Client) sendEvent(action string, actCall market.Action) error {
 // Gotcha
 // If we return/treat we die...
 func RunClient() int {
-	var endpoint string = "ws://localhost:8080"
+	var endpoint string = "ws://jntun.com:8080"
 	c, _, err := websocket.DefaultDialer.Dial(endpoint, nil)
 	if err != nil {
 		StarkError("RunClient(): %s", err)

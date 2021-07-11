@@ -5,9 +5,10 @@ import App from './App';
 import * as serviceWorker from './serviceWorker';
 
 // Wifi
-var backend = '10.0.0.168:8080';
+//var backend = '10.0.0.168:8080';
 // Ethernet
 // var backend = '10.0.0.168:8080';
+var backend = 'localhost:8080';
 
 ReactDOM.render(<App endpoint={backend}/>, document.getElementById('root'));
 
