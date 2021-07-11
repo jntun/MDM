@@ -32,9 +32,7 @@ func MapEvent(sess *Session, conn *websocket.Conn, msg *Message) {
 	case UPDATENAME:
 		action = UsernameAction{}
 	case ADMIN:
-		log.Printf("x: %v\n\n", msg.Body)
-		action = AdminAction{Body: msg.Body}
-
+		action = AdminAction{msg.Body}
 	default:
 		log.Printf("[ERROR] Invalid event received: %s\n", msg)
 		return
